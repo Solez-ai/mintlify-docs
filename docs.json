@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "BrailleBridge",
-  "theme": "almond",
+  "theme": "linden",
   "colors": {
     "primary": "#A16207",
     "light": "#C49A4A",
@@ -79,5 +79,16 @@
       "type": "github",
       "href": "https://github.com/Solez-ai/braille.bridge"
     }
+  },
+  "appearance": {
+    "default": "light"
+  },
+  "thumbnails": {
+    "fonts": {
+      "family": "Geist"
+    }
+  },
+  "styling": {
+    "latex": true
   }
 }
