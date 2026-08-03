@@ -1,0 +1,59 @@
+---
+title: "Connect BrailleBridge Devices to the Teacher Software"
+sidebarTitle: "Connecting Devices"
+description: "Step-by-step guide to adding students, assigning COM ports, and establishing serial connections between BrailleBridge devices and the Teacher Software."
+---
+
+Before your students can start typing, you need to add each student to the roster and connect their BrailleBridge device to the Teacher Software over USB. The software uses the browser's Web Serial API to open a direct serial connection to each device, so there are no drivers to install and no software to configure — the entire setup takes less than a minute per student.
+
+<Warning>
+  The Web Serial API is only available in **Chrome 89+** and **Edge 89+**. Firefox and Safari do not support this API and cannot run the Teacher Software. If you open the app in an unsupported browser, the Connect button will not function.
+</Warning>
+
+## Connecting a device
+
+<Steps>
+  <Step title="Open the Teacher Software">
+    Open the Teacher Software HTML file (or its hosted URL) in Chrome or Edge. When the page loads, click the **Teacher** button in the header navigation to switch to Teacher View. You will see the Class Roster panel on the left and an empty Feed Grid on the right.
+  </Step>
+  <Step title="Add a student">
+    In the Class Roster panel, click the **+** button in the roster header. An **Add Student** form expands below the header. Enter the student's name (up to 30 characters), select the connection type (**USB Serial**), and then click **Add Student** to confirm. The student appears in the roster list and a corresponding feed card is created in the Feed Grid.
+  </Step>
+  <Step title="Configure the port">
+    On the student's roster entry or feed card, select the correct **baud rate** from the dropdown. The default is **115200**, which matches the BrailleBridge firmware's default serial speed. Only change this if your device is configured to use a different rate (9600, 57600, or 38400 are also available).
+  </Step>
+  <Step title="Connect">
+    Click the **Connect** button (the lightning bolt icon) on the student's roster entry or feed card. Your browser will display a native serial port picker dialog listing all detected COM ports. Select the COM port that the student's BrailleBridge device is plugged into, then click **Connect** in the dialog to confirm.
+  </Step>
+  <Step title="Confirm the connection">
+    Once connected, the student's status indicator turns green and shows **Online**. The language badge (**EN** or **BN**) updates to reflect the language currently active on the device. The feed card now shows a blinking cursor in the text area — the device is live and ready to receive input.
+  </Step>
+</Steps>
+
+## Connecting multiple students
+
+Repeat the steps above for each student in your class. Every student you add gets their own independent serial reader loop running in the background — one student's connection has no effect on any other. There is no hard limit on the number of students the software can handle; add as many students as you have devices and USB ports available.
+
+If you are connecting many students at once, it helps to label your USB cables or use a powered USB hub so you can quickly identify which physical port corresponds to which student in the browser's port picker.
+
+## Disconnecting
+
+To disconnect a student's device, click the **Disconnect** button (the plug icon, shown in red when connected) on their roster entry or feed card. The serial reader loop stops cleanly and the status indicator returns to grey **Offline**. The student's complete character history is preserved in memory — you can still export their log and read back everything they typed even after disconnecting.
+
+## Roster persistence
+
+Student names, connection types, and baud rate settings are automatically saved to browser **localStorage** every time you add or modify a student. When you reopen the app in the same browser on the same machine, your full roster is restored exactly as you left it. Note that serial port assignments are not persisted by the browser — you will need to click **Connect** again and re-select the COM port after reopening the app.
+
+## Troubleshooting
+
+<Accordion>
+  <AccordionItem title="The port picker shows no devices">
+    The browser's port picker will only list devices that the operating system has already recognised. Ensure the BrailleBridge device is plugged in via USB and has been powered on — the red LED on the device should be illuminated. If the LED is off, check the USB cable and try a different port. On Windows, you can confirm the device is detected by opening **Device Manager** and looking for a COM port under *Ports (COM & LPT)*. On macOS, check **System Information → USB**.
+  </AccordionItem>
+  <AccordionItem title="Text stops appearing">
+    If a student's feed stops updating mid-session, first check the physical USB cable — a loose connector is the most common cause. Try clicking **Disconnect** on the student's card and then **Connect** again to re-establish the reader loop. Because the 500 ms failsafe interval continuously rebuilds each feed from the stored character array, no characters that were already received are lost during a reconnect — the feed will resume exactly where it left off.
+  </AccordionItem>
+  <AccordionItem title="Wrong language shown">
+    The language badge updates automatically whenever the device sends a `LANG:en` or `LANG:bn` serial message, which the student triggers by holding dots 4, 5, and 6 simultaneously for 500 ms. If the badge shows the wrong language, ask the student to toggle their language once (hold dots 4+5+6 for 500 ms) to send a fresh language message — the badge will correct itself immediately.
+  </AccordionItem>
+</Accordion>

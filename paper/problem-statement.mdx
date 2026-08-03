@@ -1,0 +1,48 @@
+---
+title: "The Classroom Accessibility Gap BrailleBridge Solves"
+sidebarTitle: "Problem Statement"
+description: "Blind students face critical barriers during written exams: privacy loss, dependency on sighted writers, transcription errors, and inaccessible Braille for teachers."
+---
+
+Picture a blind student sitting a mathematics examination. She knows the material. She is ready to write. But before she can put a single answer on paper, she must speak it aloud — to a stranger, in a room full of peers, word by word, symbol by symbol. Someone else writes what they think they heard. Someone else controls the record. This is not an edge case: it is the daily reality for millions of blind and visually impaired students in classrooms where no accessible writing technology is available or affordable. BrailleBridge was built to change exactly this situation.
+
+## Barriers blind students face
+
+The traditional workaround — a sighted writer — introduces a cascade of problems that go far beyond inconvenience. Each one represents a real cost to the student's dignity, accuracy, and educational outcomes.
+
+<CardGroup cols={2}>
+  <Card title="Loss of privacy" icon="eye-slash">
+    Every answer must be spoken aloud for the writer to record it. In a shared examination room, there is no such thing as a confidential answer. Sensitive topics, personal reflections, and correct answers to difficult questions are all broadcast to the surrounding room.
+  </Card>
+  <Card title="Loss of independence" icon="link">
+    The student no longer controls their own written record. The writer interprets, paraphrases, and decides what gets recorded — and how. The final submission may not reflect what the student intended to say.
+  </Card>
+  <Card title="Reduced speed control" icon="clock">
+    The student must work at the writer's pace, not their own. They must pause, wait, repeat, and slow down to match someone else's typing speed or handwriting speed — introducing unnecessary cognitive load during a high-stakes examination.
+  </Card>
+  <Card title="Transcription errors" icon="triangle-exclamation">
+    Technical terms, proper names, mathematical notation, and Bangla phonetics are easily misheard or misspelled by a sighted writer unfamiliar with the subject matter. A misheard term in a science exam, or a Bangla phoneme rendered incorrectly, can cost marks the student clearly deserved.
+  </Card>
+  <Card title="Teacher accessibility gap" icon="book">
+    Even when a blind student writes their own answers using embossed Braille — with a slate and stylus or a Perkins Brailler — the teacher typically cannot read the result. The work goes unassessed directly, requiring a separate transcription step that introduces delay, additional cost, and further opportunity for error.
+  </Card>
+  <Card title="Financial barriers" icon="dollar-sign">
+    Mechanical Braille writers cost hundreds to thousands of dollars and are difficult to repair locally when parts fail. Commercial digital Braille displays and notetakers can cost $1,000–$5,000 or more. For schools in low-resource settings, these prices put accessible writing technology out of reach entirely.
+  </Card>
+</CardGroup>
+
+## Problem–solution mapping
+
+BrailleBridge directly addresses each of these barriers. The student writes silently using familiar Braille chords; the teacher receives readable digital text. The table below maps each specific difficulty to its BrailleBridge solution.
+
+| Difficulty | BrailleBridge Solution |
+|---|---|
+| Must dictate answers aloud | Silent Braille chord typing — no speech required |
+| No control over written record | Independent composition — the student authors every character |
+| Writer misunderstands terms | Direct chord-to-text translation — no human intermediary |
+| Teacher cannot read Braille | Digital text appears immediately on the Teacher Software |
+| Expensive equipment | Low-cost ESP32 + switches (~$12 total bill of materials) |
+
+<Note>
+  This is not just a technology problem — it is an equity and dignity problem. A student who knows the answer but cannot record it independently is disadvantaged not by ability, but by the absence of an appropriate tool. BrailleBridge addresses the gap between the blind student's tactile writing and the teacher's need for readable text — restoring both independence to the student and accessibility to the teacher, at a cost that schools in low-resource settings can actually afford.
+</Note>

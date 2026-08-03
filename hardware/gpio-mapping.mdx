@@ -1,0 +1,65 @@
+---
+title: "ESP32 GPIO Pin Mapping for BrailleBridge"
+sidebarTitle: "GPIO Mapping"
+description: "Complete GPIO pin assignments for the BrailleBridge ESP32 firmware: all six Braille dot inputs, Space, Shift, and both LED outputs with their resistor values."
+---
+
+This page lists every GPIO pin assignment used by the BrailleBridge firmware. Knowing the exact pin numbers matters both during initial assembly — so you connect each switch and LED to the correct pad on the ESP32 Dev Module — and during troubleshooting, when you need to probe individual signals to isolate a fault. If a key feels unresponsive, you can verify continuity between the switch terminal and the GPIO listed here; if an LED is dark, you can confirm the output pin and resistor are intact before touching the firmware.
+
+## GPIO pin assignments
+
+| Function | GPIO | Notes |
+|---|---|---|
+| Dot 1 | 14 | Top-left |
+| Dot 2 | 12 | Middle-left |
+| Dot 3 | 13 | Bottom-left |
+| Dot 4 | 27 | Top-right |
+| Dot 5 | 26 | Middle-right |
+| Dot 6 | 25 | Bottom-right |
+| Space | 33 | Dedicated space key |
+| Shift | 32 | Modifier key |
+| Red LED | 18 | English mode indicator, 220 Ω resistor |
+| Green LED | 19 | Bangla mode indicator, 220 Ω resistor |
+
+## Wiring conventions
+
+All eight switches share a **common ground bus** on the perfboard. One leg of every switch connects to that ground rail; the other leg connects to its assigned GPIO pin. Because the firmware calls `pinMode(..., INPUT_PULLUP)` for every input, the ESP32's internal pull-up resistors hold each line at `HIGH` when the switch is open. Pressing a switch pulls that GPIO directly to ground, reading `LOW`. This means:
+
+- **Unpressed = HIGH**
+- **Pressed = LOW**
+
+You only need **9 wires total** from the perfboard to the ESP32: one shared ground wire and one signal wire per input (8 inputs × 1 signal wire = 8 wires). The two LED anodes connect to GPIO 18 and GPIO 19 through individual 220 Ω resistors, with the LED cathodes returning to the same ground bus.
+
+## The 6-bit chord encoding
+
+Each Braille dot maps to a single bit position in an unsigned 8-bit integer. Dot 1 occupies bit 0 (the least-significant bit), and dot 6 occupies bit 5. When you press a key, the firmware sets the corresponding bit; dots you do not press leave their bits at zero. After the 180 ms chording window closes, the resulting value is a compact 6-bit number that uniquely identifies the chord and can be compared against the dictionary in constant time.
+
+| Dot | Bit position | Bit weight |
+|---|---|---|
+| Dot 1 | 0 | 1 |
+| Dot 2 | 1 | 2 |
+| Dot 3 | 2 | 4 |
+| Dot 4 | 3 | 8 |
+| Dot 5 | 4 | 16 |
+| Dot 6 | 5 | 32 |
+
+The function that builds this value from the six GPIO readings is reproduced below exactly as it appears in the firmware:
+
+```cpp readChord() — reading all 6 dot pins
+uint8_t readChord() {
+  uint8_t chord = 0;
+  if (digitalRead(PIN_DOT1) == LOW) chord |= (1 << 0);
+  if (digitalRead(PIN_DOT2) == LOW) chord |= (1 << 1);
+  if (digitalRead(PIN_DOT3) == LOW) chord |= (1 << 2);
+  if (digitalRead(PIN_DOT4) == LOW) chord |= (1 << 3);
+  if (digitalRead(PIN_DOT5) == LOW) chord |= (1 << 4);
+  if (digitalRead(PIN_DOT6) == LOW) chord |= (1 << 5);
+  return chord;
+}
+```
+
+Each `if` statement checks whether its GPIO is `LOW` (pressed) and, if so, ORs the corresponding power-of-two bitmask into the accumulator `chord`. The function returns `0` if no dots are held, and a value between `1` and `63` (0b000001 – 0b111111) for any combination of pressed dots.
+
+<Info>
+  Pressing **dots 1 and 4** together produces a chord value of `0b001001` — bit 0 set for dot 1, and bit 3 set for dot 4. In English mode this resolves to the letter **'C'**; in Bangla mode it resolves to the consonant **চ** (cha) under the Bharati Braille standard.
+</Info>

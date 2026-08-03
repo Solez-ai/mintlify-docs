@@ -1,0 +1,110 @@
+---
+title: "Braille Chord Encoding: How BrailleBridge Reads Key Presses"
+sidebarTitle: "Chord Encoding"
+description: "Learn how BrailleBridge encodes simultaneous Braille key presses into a 6-bit chord value using the ESP32 GPIO pins and a 180 ms collection window."
+---
+
+When you press a Braille key combination on BrailleBridge, the ESP32 firmware instantly collapses all six dot switches into a single 6-bit integer — a *chord value* — and looks it up in the active dictionary. This page explains exactly how that encoding works, why the 180 ms collection window exists, and what happens between your fingertips and the character that appears on screen.
+
+## What is chording?
+
+In standard Braille, one character is formed by pressing multiple dots at the same time. BrailleBridge mirrors this: you press whichever dots make up a letter, release them, and the firmware translates the combined pattern into a character. This technique is called **chording**.
+
+The challenge with physical keys is that your fingers never land in perfect unison — even a fast typist will touch dot 1 a few milliseconds before dot 4. If the firmware processed each key press the instant it detected a `LOW` signal, a single intended character would be split across multiple readings. The **180 ms collection window** solves this by giving all your fingers time to land before the firmware commits to a translation.
+
+## The 6-bit bitmask
+
+BrailleBridge maps each of the six Braille dots to one bit in an unsigned 8-bit integer:
+
+| Dot | GPIO | Bit position | Bitmask |
+|-----|------|-------------|---------|
+| Dot 1 | 14 | Bit 0 | `0b000001` |
+| Dot 2 | 12 | Bit 1 | `0b000010` |
+| Dot 3 | 13 | Bit 2 | `0b000100` |
+| Dot 4 | 27 | Bit 3 | `0b001000` |
+| Dot 5 | 26 | Bit 4 | `0b010000` |
+| Dot 6 | 25 | Bit 5 | `0b100000` |
+
+All six pins are configured as `INPUT_PULLUP`, meaning they read `HIGH` at rest and go `LOW` when you press the key. The `readChord()` function polls all six pins and OR-assigns the corresponding bit for every pin that reads `LOW`:
+
+```cpp Reading all 6 dot pins into a chord value
+uint8_t readChord() {
+  uint8_t chord = 0;
+  if (digitalRead(PIN_DOT1) == LOW) chord |= (1 << 0);
+  if (digitalRead(PIN_DOT2) == LOW) chord |= (1 << 1);
+  if (digitalRead(PIN_DOT3) == LOW) chord |= (1 << 2);
+  if (digitalRead(PIN_DOT4) == LOW) chord |= (1 << 3);
+  if (digitalRead(PIN_DOT5) == LOW) chord |= (1 << 4);
+  if (digitalRead(PIN_DOT6) == LOW) chord |= (1 << 5);
+  return chord;
+}
+```
+
+The result is a number between `0` and `63` (`0b000000`–`0b111111`). Each possible 6-bit pattern corresponds to at most one character per language, so dictionary lookup is a simple linear scan — no parsing, no state machine.
+
+## The 180 ms collection window
+
+The main loop calls `readChord()` on every iteration and accumulates the result with a bitwise OR into a running `currentChord` variable. Once the first dot goes `LOW`, the firmware starts a timer. After 180 ms it commits the accumulated chord and calls `processChord()`:
+
+```cpp Chord detection with 180 ms window
+void loop() {
+  uint8_t current = readChord();
+  if (current > 0 && !chordingActive) {
+    chordingActive = true; chordStartTime = millis(); chord = current;
+  }
+  if (chordingActive) {
+    chord |= readChord();
+    if (millis() - chordStartTime >= 180) {
+      handleChord(chord & 0x3F); chordingActive = false;
+    }
+  }
+}
+```
+
+The `& 0x3F` mask at commit time discards the two unused upper bits, ensuring only the six dot bits reach the dictionary lookup. If you release all keys before 180 ms elapses, the firmware also processes the chord immediately — so fast typists are never delayed by the full window.
+
+## Worked example — typing 'C'
+
+<Steps>
+  <Step title="Press dots 1 and 4">
+    You press down dot 1 (GPIO 14) and dot 4 (GPIO 27) simultaneously. Both pins go `LOW`.
+  </Step>
+  <Step title="readChord() sets bits 0 and 3">
+    `readChord()` reads GPIO 14 as `LOW` → sets bit 0. Reads GPIO 27 as `LOW` → sets bit 3. The running chord accumulates to `0b001001`.
+  </Step>
+  <Step title="Chord value = 9">
+    `0b001001` in decimal is **9**. The firmware holds this value as the window continues to accumulate (in case more dots land).
+  </Step>
+  <Step title="180 ms window closes">
+    No other dots were pressed. The firmware calls `processChord(9)`.
+  </Step>
+  <Step title="Shift is not held">
+    The firmware reads GPIO 32 (`SHIFT`) as `HIGH` — not pressed. `shiftActive` is `false`.
+  </Step>
+  <Step title="English mode — lookupChord(9, false) returns &quot;c&quot;">
+    `isBangla` is `false`, so the dictionary is searched for a chord value of `9` with a non-null `english` field. The entry `{ 0b001001, "c", "চ" }` matches and returns `"c"`.
+  </Step>
+  <Step title="sendChar(&quot;c&quot;) transmits the character">
+    `sendChar()` calls `bleKeyboard.print("c")` over Bluetooth HID and `Serial.print("c")` over USB at 115200 baud — both simultaneously.
+  </Step>
+  <Step title="LEDs confirm success">
+    Both LEDs flash together for 100 ms, then return to the language-indicator state (red for English). You feel the confirmation without looking away from your work.
+  </Step>
+</Steps>
+
+## Valid vs. invalid chords
+
+Every chord the firmware processes falls into one of two outcomes:
+
+**Valid chord** — the chord value exists in the active language's dictionary:
+- The translated character is sent over Bluetooth HID and USB Serial.
+- Both LEDs flash simultaneously for **100 ms**.
+
+**Invalid chord** — the chord value is not found (or the entry has no mapping for the current language):
+- No character is sent.
+- Both LEDs blink **3 times** (150 ms on / 150 ms off).
+- The device prints `Invalid` over USB Serial so the Teacher Software can log the event.
+
+<Note>
+  On a 240 MHz ESP32, the entire dictionary lookup — a linear scan of under 60 entries — completes in a few microseconds. The 180 ms window is there for your fingers, not the processor. From a typist's perspective, the response feels instantaneous.
+</Note>

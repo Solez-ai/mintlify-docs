@@ -1,0 +1,53 @@
+---
+title: "BrailleBridge vs. Existing Solutions: Full Comparison"
+sidebarTitle: "Comparative Analysis"
+description: "Comprehensive comparison of BrailleBridge against human writers, slate and stylus, Perkins Brailler, voice typing, commercial digital systems, and standard keyboards."
+---
+
+Before BrailleBridge, a teacher or school administrator evaluating options for a blind student had six realistic choices — none of which solved the full problem. A human writer preserves no privacy. A slate and stylus produces output the teacher cannot read. A Perkins Brailler is the gold standard but costs ten to eighty times more than BrailleBridge and still leaves the teacher facing embossed dots. Voice typing breaks down in noise and fails entirely for mathematics. Commercial digital systems offer impressive features but at prices that make school-wide deployment impossible in low-resource settings. And a standard keyboard simply cannot produce the six-dot Braille chords that are a blind student's natural writing method. BrailleBridge was designed to fill the gap that all six of these solutions leave open simultaneously.
+
+## Comprehensive comparison
+
+| Solution | Strengths | Weaknesses |
+|---|---|---|
+| Human writer | No equipment needed, no setup cost | Privacy loss, transcription errors, student loses control of written record |
+| Slate & stylus | Affordable, portable, fully tactile | Produces embossed Braille unreadable to most sighted teachers; slow reverse-writing method |
+| Perkins Brailler | Familiar six-dot method, durable, accepted in examinations | $600–$1,000+, heavy, produces embossed-only output, hard to repair locally |
+| Voice typing | Fast in a quiet room, requires no special hardware | Fails in noisy classrooms, poor accuracy for technical terms and Bangla phonetics, unusable for math notation |
+| Commercial digital | Advanced accessibility features, polished UX, screen reader integration | $1,000–$5,000+, proprietary parts, hard to repair locally, often overkill for a single classroom use case |
+| Ordinary keyboard | Cheap, universally available, familiar to teachers | No six-dot chording; forces the student to abandon Braille and learn a QWERTY layout |
+| **BrailleBridge** | **Physical six-dot Braille input, bilingual translation, dual output, teacher software, under $15** | **Currently at prototype stage** |
+
+## Cost comparison
+
+Affordability is not just a nice-to-have — it is the deciding factor for whether a school can deploy accessible writing technology at all. The cost difference between BrailleBridge and the alternatives is not marginal; it is an order of magnitude.
+
+**Human writer** — The device cost is $0, but the human cost is substantial: a trained writer must be present for every examination, every class, every session. The privacy cost and transcription error rate are unquantifiable but real. This "free" solution imposes the greatest burden on the student.
+
+**Slate & stylus** — Costs less than $20, making it the most affordable physical option. But the output is embossed Braille that the teacher cannot read without specific training, and the reverse-writing method is slower than forward-writing devices.
+
+**Perkins Brailler** — The industry standard for independent Braille writing, priced at approximately **$600–$1,000+** per unit. Durable and reliable, but produces only embossed output, is heavy for younger students, and requires specialist repair when parts fail.
+
+**Commercial digital Braille display or notetaker** — Priced at approximately **$1,000–$5,000+** per unit. These devices offer the most sophisticated accessibility features available, but their cost makes deployment across a classroom, let alone a school district, financially impractical for most institutions in low-resource settings.
+
+**BrailleBridge** — Approximately **~$12** in components per device. Every part is a standard, widely available commodity: the ESP32 costs ~$5, Outemu switches ~$0.38 each, and the enclosure prints from open-source STL files on any FDM printer. A damaged switch is replaced for cents. A damaged ESP32 is replaced for $5. The enclosure can be reprinted locally in a few hours. Even including tools and overhead, a complete device costs under $15.
+
+## Why BrailleBridge fills a unique gap
+
+BrailleBridge is not simply a cheaper version of an existing solution. It addresses four specific gaps that no single existing product closes — and it closes all four simultaneously.
+
+**1. Between the blind student's tactile writing and the teacher's need for readable text**
+
+Every current option forces a trade-off: either the student uses their natural Braille method (slate, Perkins) and the teacher cannot read the output, or the student produces readable text (dictation, standard keyboard) and loses their natural writing method. BrailleBridge eliminates this trade-off. The student writes in Braille. The teacher receives plain digital text. No compromise is required from either side.
+
+**2. Between English and Bangla Braille**
+
+Bangladesh's educational system requires students to write in both English and Bangla, often within the same examination. No affordable device currently supports bilingual Braille input with seamless switching between the two languages. BrailleBridge implements both English (Grade 1) and Bangla (Bharati Braille) dictionaries on the same hardware, toggled with a deliberate chord that cannot be triggered accidentally.
+
+**3. Between the student's independent composition and the teacher's assessment workflow**
+
+Even if a student writes independently, the teacher must still receive and assess the work. Embossed Braille requires a transcription step. A screen reader on the student's device helps the student but gives the teacher nothing. BrailleBridge's Teacher Software receives, displays, timestamps, organises, and exports every student's work — integrating directly into the teacher's existing assessment workflow without requiring them to learn Braille or use any special software beyond a browser.
+
+**4. Between the high cost of commercial assistive technology and limited school budgets**
+
+Commercial assistive technology is designed for individual users with funding for specialist equipment. It is not designed for schools that need to equip ten or twenty students at once on a constrained budget. At ~$12 per device, a school could equip an entire examination room of twenty students for the price of a single Perkins Brailler — and each device can be repaired component by component when it eventually needs maintenance.

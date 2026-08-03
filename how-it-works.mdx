@@ -1,0 +1,128 @@
+---
+title: "How BrailleBridge Works: From Chord to Readable Text"
+sidebarTitle: "How It Works"
+description: "Understand the complete BrailleBridge workflow: Braille chord input, ESP32 translation, dual Bluetooth and USB Serial output, and teacher display."
+---
+
+When you press keys on BrailleBridge, several things happen in quick succession: the firmware reads your finger positions as a binary pattern, waits a fixed window for all your fingers to land, maps the result to a character in the active language dictionary, and fires that character down two independent output channels at once. The whole process — from keypress to text appearing on the teacher's screen — takes well under a second. This page walks through every stage of that pipeline.
+
+## The chord input
+
+A standard six-dot Braille cell is arranged in two columns of three dots:
+
+```text
+1  4
+2  5
+3  6
+```
+
+You produce a character by pressing one or more of those dot keys simultaneously. This technique is called **chording** — the combination of dots you press at the same moment defines the letter, digit, or symbol you intend to write, exactly as in manual Braille.
+
+BrailleBridge maps each dot to a single bit in a 6-bit integer:
+
+| Dot | Bit position | Bit value |
+| --- | ------------ | --------- |
+| 1   | 0            | 1         |
+| 2   | 1            | 2         |
+| 3   | 2            | 4         |
+| 4   | 3            | 8         |
+| 5   | 4            | 16        |
+| 6   | 5            | 32        |
+
+When you press a set of dots, the firmware ORs the corresponding bits together to produce a single 6-bit chord value. Pressing dots 1 and 4 together, for example, produces `0b001001` (decimal 9). That single number is the key used to look up the correct output character in the active dictionary.
+
+Because human fingers rarely land at the exact same microsecond, the firmware does not require a perfectly simultaneous press. Instead, it opens a **180 ms chording window** the moment it detects any key going low. Every key that goes low within that window is OR-ed into the same chord value. When the window closes, the full chord is evaluated as a single intended input — so a chord that physically takes 60 ms to press is read as one character, not six.
+
+## Translation pipeline
+
+Every character you type travels through the following sequence inside the ESP32:
+
+<Steps>
+  <Step title="Chord pressed">
+    You press one or more dot keys. Any key transitioning from HIGH (unpressed, internal pull-up) to LOW (pressed, connected to ground) triggers the start of the chording window.
+  </Step>
+  <Step title="GPIO read">
+    The firmware reads all six dot GPIO pins. Each pin wired to a pressed key reads `LOW`; unpressed pins read `HIGH` due to the ESP32's internal pull-up resistors.
+  </Step>
+  <Step title="180 ms window">
+    The firmware holds the chord open for 180 ms, continuously OR-ing any newly pressed dots into the accumulating chord value. This ensures near-simultaneous finger presses are merged into a single chord.
+  </Step>
+  <Step title="6-bit bitmask assembled">
+    When the window closes, all pressed dots have been collapsed into a single 6-bit integer — the chord value. For example, dots 1 and 4 produce `0b001001`.
+  </Step>
+  <Step title="Shift check">
+    The firmware checks whether the physical Shift key is held. If it is, the chord is routed to the Shift layer — which covers uppercase letters (English), Bangla vowel signs (কার/matra), digits 1–0, punctuation, and math symbols.
+  </Step>
+  <Step title="Language check">
+    The firmware checks the active language flag (English or Bangla). This determines which dictionary is searched.
+  </Step>
+  <Step title="Dictionary lookup">
+    The chord value is looked up in the active `BrailleEntry` array. If a match is found, the corresponding Unicode character is retrieved. If no match is found, the chord is marked invalid.
+  </Step>
+  <Step title="Output character">
+    A valid character is transmitted over both output channels simultaneously: as a Bluetooth HID keystroke to the paired device and as a UTF-8 character over USB Serial at 115200 baud to the Teacher Software.
+  </Step>
+  <Step title="LED flash confirmation">
+    Both LEDs flash briefly (approximately 100 ms) to confirm a valid character was accepted. For an invalid chord, both LEDs blink three times in rapid succession as a tactile-free error signal.
+  </Step>
+  <Step title="Wait for next chord">
+    The chord buffer resets and the firmware returns to its idle state, waiting for the next keypress.
+  </Step>
+</Steps>
+
+## Dual output channels
+
+BrailleBridge sends every translated character over two independent channels at the same time. Neither channel depends on the other — a Bluetooth dropout does not affect the USB Serial feed, and the Teacher Software connection does not influence what you receive on your own device.
+
+<Note>
+  **Channel 1 — Bluetooth HID (student device)**
+
+  The ESP32 presents itself as a standard Bluetooth HID keyboard named **BrailleBridge**. Once paired, any character you type appears in whatever text field is focused on your phone, tablet, or PC — just as if you were typing on a regular wireless keyboard. Your device's built-in screen reader (TalkBack, VoiceOver, Narrator) reads each character aloud as it arrives, giving you real-time audio confirmation of what you have typed without any additional software.
+
+  **Channel 2 — USB Serial (Teacher Software)**
+
+  The same character is simultaneously sent over USB Serial at 115200 baud. The browser-based Teacher Software connects to this serial port via the Web Serial API in Chrome or Edge. Each character appears in the student's live feed the moment it is typed, with a `[HH:MM:SS]` timestamp attached. Language change events (`LANG:en` and `LANG:bn`) and invalid chord rejections (`Invalid`) are also sent over this channel so the Teacher Software can update its language indicator and display appropriate feedback.
+</Note>
+
+## LED indicators
+
+The two status LEDs on the top of the device give you continuous, glanceable feedback without requiring you to look at a screen.
+
+| LED state | Meaning |
+| --------- | ------- |
+| Red ON, Green OFF | English mode active |
+| Green ON, Red OFF | Bangla mode active |
+| Both flash ON for ~100 ms | Valid character successfully translated and sent |
+| Both blink 3 times rapidly | Invalid chord — no matching entry in the active dictionary |
+
+## Language switching
+
+You switch between English and Bangla by holding **dots 4, 5, and 6 simultaneously for 500 ms**. The chord `0b111000` (dots 4+5+6) is not assigned to any English letter or Bangla character, which means accidental switching during normal typing is practically impossible.
+
+When you trigger the switch, the firmware toggles an internal boolean flag, updates the LED (Red for English, Green for Bangla), and immediately sends either `LANG:en` or `LANG:bn` over USB Serial so the Teacher Software can update its language indicator for your feed in real time.
+
+From that point forward, every chord you press is looked up in the newly active dictionary — the same physical keys produce different output depending on the language mode, just as Bharati Braille intends.
+
+## Worked example: typing the letter 'C' in English
+
+Here is a complete walkthrough of what happens when you press dots 1 and 4 together while in English mode.
+
+**What you do:** Press dot 1 (GPIO 14) and dot 4 (GPIO 27) simultaneously.
+
+**Stage 1 — GPIO read:** Dot 1 reads `LOW` (bit 0 set → value 1). Dot 4 reads `LOW` (bit 3 set → value 8). All other dots read `HIGH`.
+
+**Stage 2 — 180 ms window:** The firmware ORs 1 and 8 together: `1 | 8 = 9`. In binary: `0b001001`.
+
+**Stage 3 — 6-bit bitmask:** Chord value is `9` (`0b001001`), representing dots 1 and 4.
+
+**Stage 4 — Shift check:** Shift key reads `HIGH` (not pressed). No shift layer applied.
+
+**Stage 5 — Language check:** Language flag is English (`LANG:en`).
+
+**Stage 6 — Dictionary lookup:** The English dictionary is searched for chord value `9`. Entry found: `'c'`.
+
+**Stage 7 — Output:** The character `'c'` is sent as a Bluetooth HID keystroke to your paired device, and as the byte `0x63` over USB Serial to the Teacher Software. If Shift had been held, the lookup would have returned `'C'` (uppercase) or the digit `3` (from the Shift number layer, since C corresponds to the third letter A–J → 1–0).
+
+**Stage 8 — LED flash:** Both LEDs flash for ~100 ms confirming a valid character.
+
+**Stage 9 — Reset:** The chord buffer clears. The device waits for your next keypress.

@@ -1,0 +1,57 @@
+---
+title: "Switching Between English and Bangla on BrailleBridge"
+sidebarTitle: "Language Switching"
+description: "Toggle BrailleBridge between English and Bangla (Bharati Braille) by holding dots 4, 5, and 6 for 500 ms. LED indicators confirm the active language instantly."
+---
+
+BrailleBridge supports two full writing systems — English and Bangla (Bharati Braille standard) — on the same six-dot keyboard. You switch between them with a single held gesture, no menus, no buttons, and no cables. The device confirms the change with its LEDs in under a second, and the Teacher Software updates every student's language indicator automatically.
+
+## The language toggle gesture
+
+To switch languages, hold **dots 4, 5, and 6** together and keep them pressed for at least **500 ms**. The chord value for this combination is `0b111000` (bits 3, 4, and 5 set). As soon as the 500 ms threshold is reached, the firmware flips the `isBangla` boolean, announces the new language over USB Serial, and waits for you to lift your fingers before resuming normal input:
+
+```cpp Language toggle detection in the main loop
+if (currentChord == 0b111000 && elapsed >= 500) {
+  isBangla = !isBangla;
+  Serial.println(isBangla ? "LANG:bn" : "LANG:en");
+  chordActive = false; currentChord = 0;
+  while (digitalRead(DOT_4) == LOW || digitalRead(DOT_5) == LOW
+      || digitalRead(DOT_6) == LOW) { delay(10); }
+  return;
+}
+```
+
+A **short press** of dots 4+5+6 (less than 500 ms) is deliberately ignored. The firmware keeps the chord pending, waiting to see whether you hold long enough for a toggle or release early for a normal character. This prevents any accidental language switch mid-word.
+
+## LED language indicators
+
+The two on-board LEDs give you an at-a-glance view of the active language at all times:
+
+| Language | Red LED | Green LED |
+|---|---|---|
+| English | ON | OFF |
+| Bangla | OFF | ON |
+| Valid character (100 ms flash) | ON | ON |
+
+Both LEDs lighting together for 100 ms signals a successful character — this flash is the same in both language modes. After the flash, the LEDs return to whichever single-colour state reflects the current language.
+
+## Serial announcements
+
+Every time the language changes, BrailleBridge immediately sends a one-line message over USB Serial at 115200 baud:
+
+- **`LANG:en`** — the device has switched to English mode.
+- **`LANG:bn`** — the device has switched to Bangla mode.
+
+The Teacher Software listens for these messages in its serial read loop and automatically updates the language badge shown beside each student's name — no manual action required from the teacher. If you are building a custom integration, you can rely on these messages to keep your UI in sync with the device state.
+
+## Why dots 4+5+6?
+
+The three right-hand dots (`0b111000`) form a chord that does not correspond to any standard English letter, digit, or common symbol in the Bharati Braille dictionary. Choosing an unassigned chord as the toggle means you can type freely in either language without any risk of accidentally triggering a switch — even if you occasionally brush multiple keys at once. The added 500 ms hold requirement makes a double-accidental trigger effectively impossible during normal writing.
+
+<Tip>
+  If you are ever unsure which language is active, glance at the LEDs: **red** means English, **green** means Bangla. You can check without pressing anything or interrupting your work.
+</Tip>
+
+<Note>
+  BrailleBridge always starts in **English mode** (red LED on) when you power on. If your session begins in Bangla, perform the dots 4+5+6 toggle once to switch — the green LED confirms you are ready to write Bangla.
+</Note>

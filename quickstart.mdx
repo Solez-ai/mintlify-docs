@@ -1,47 +1,72 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with BrailleBridge in Your Classroom"
+sidebarTitle: "Quickstart"
+description: "Set up BrailleBridge from unboxing to first typed character in four steps: power on, pair via Bluetooth, connect Teacher Software, and start typing."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+This guide gets you from an unboxed BrailleBridge device to your first typed character in four steps. You need the hardware device, a USB cable (Micro-USB to USB-A or USB-C depending on your ESP32 module), a phone, tablet, or PC for Bluetooth pairing, and a second computer running Chrome or Edge for the Teacher Software. The entire setup takes less than five minutes.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Power on the device">
+    Connect the BrailleBridge device to any USB power source — a phone charger, a laptop port, or a USB power bank — using the device's USB cable. The ESP32 draws its power and serial connection from this same cable.
 
-    ```bash
-    npm install your-package
-    ```
+    Once powered, watch the LEDs:
+    - The **Red LED turns on** and stays on. This tells you the device has booted, the firmware is running, and English mode is active.
+    - The **Green LED stays off**. You are in English mode by default.
+
+    The device is now ready to pair and translate Braille chords. No button presses, no configuration menus, and no power switch to find — powering via USB is all it takes.
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Pair via Bluetooth">
+    On your phone, tablet, or PC, open the Bluetooth settings and scan for new devices. You will see a device named **BrailleBridge** appear in the list of available keyboards.
 
-    ```bash
-    your-cli init
-    ```
+    Select **BrailleBridge** and confirm the pairing request. The device pairs as a standard Bluetooth HID keyboard — the same class as any wireless keyboard you have used before.
+
+    <Info>
+      BrailleBridge requires no drivers, no proprietary receiver dongle, and no manufacturer app. It works out of the box with any Bluetooth-capable device running Android, iOS, Windows, macOS, or ChromeOS. Your existing screen reader (TalkBack, VoiceOver, Narrator, or ChromeVox) will automatically read each translated character aloud as you type.
+    </Info>
+
+    Once paired, open any app with a text field — a notes app, a message compose window, or a document editor — and place the cursor inside it. BrailleBridge will type directly into that field.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Connect Teacher Software">
+    On the teacher's computer, plug the same BrailleBridge USB cable into a USB port. The device is now connected over both Bluetooth (to the student's device) and USB Serial (to the teacher's computer) simultaneously.
 
-    ```bash
-    your-cli start
-    ```
+    Open the Teacher Software in **Google Chrome** or **Microsoft Edge**:
+
+    <Warning>
+      The Teacher Software uses the **Web Serial API**, which is only available in Chromium-based browsers. Firefox and Safari do not support Web Serial and will not be able to connect. Always use Chrome or Edge.
+    </Warning>
+
+    Once the Teacher Software is open:
+    1. Click **Add Student** and enter the student's name.
+    2. Select the correct **COM port** from the dropdown (on Windows it appears as `COMx`; on macOS/Linux as `/dev/tty.usbserial-xxxx` or `/dev/ttyUSB0`).
+    3. Leave the baud rate at the default **115200**.
+    4. Click **Connect**.
+
+    A green connected indicator appears next to the student's name. The live text feed for that student is now active — every character they type will appear here in real time.
+  </Step>
+  <Step title="Type your first chord">
+    With the cursor placed in a text field on the student's Bluetooth-paired device, press **dot 1** (top-left key) and **dot 4** (top-right key) together. Hold them for no more than 180 ms — then release both.
+
+    Here is what you will observe:
+    - **Both LEDs flash** briefly (approximately 100 ms), confirming the chord was valid and the character was sent.
+    - The letter **'c'** appears in the focused text field on the student's device. Your screen reader announces "c".
+    - The letter **'c'** appears in the student's live feed in the Teacher Software on the teacher's screen.
+
+    Congratulations — you have typed your first BrailleBridge character. The chord you pressed (`0b001001`, dots 1 and 4) is the standard Grade 1 Braille cell for the letter C, and BrailleBridge translated it exactly as written.
+
+    From here, continue typing Braille chords to build words. Press the **Space key** (the wider key to the left) to insert a space. Hold the **Shift key** while pressing a chord to access uppercase letters, digits (Shift + A through J = 1 through 0), punctuation, and math symbols. To switch to Bangla, hold **dots 4+5+6** together for 500 ms — the Red LED will turn off, the Green LED will turn on, and the device will begin translating Bangla Bharati Braille chords.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## What's next
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+Now that you have a working setup, explore the full capabilities of each component.
+
+<CardGroup cols={2}>
+  <Card title="Hardware overview" icon="microchip" href="/hardware/overview">
+    Dive into the GPIO mapping, bill of materials, 3D-printed enclosure, shift modifier layers, and the complete English and Bangla Braille dictionaries.
+  </Card>
+  <Card title="Teacher Software overview" icon="display" href="/teacher-software/overview">
+    Learn how to manage a multi-student roster, use Exam Mode to monitor a full class, export timestamped transcripts, and customise the interface.
+  </Card>
+</CardGroup>

@@ -1,0 +1,74 @@
+---
+title: "Exporting Student Work from BrailleBridge Teacher Software"
+sidebarTitle: "Export"
+description: "Export each student's typed examination answers as a timestamped plain-text file. Every character includes an [HH:MM:SS] timestamp for pace and fluency assessment."
+---
+
+After your students finish typing, the Teacher Software lets you download each student's complete answer as a plain-text file with a single click. Every line of text is prefixed with an `[HH:MM:SS]` wall-clock timestamp derived from the moment each word was first typed, giving you not just what the student wrote but a precise record of when they wrote it. You can use these files for grading, fluency assessment, or archiving examination records.
+
+## Export format
+
+Each exported file is a plain-text `.txt` file. The filename follows the pattern `{studentname}_braille_log.txt` (spaces in the name are replaced with underscores). The file opens in any text editor and contains a header block with the student's name, connection details, export timestamp, and character count, followed by the timestamped prose log.
+
+Characters are grouped into wrapped lines of approximately 52 characters each. Each line is prefixed with the wall-clock timestamp of the first character typed on that line, so the log reads as natural prose rather than one character per row.
+
+```text Sample export output
+BrailleBridge Student Log
+=======================
+Student: Sarah Ahmed
+Connection: USB @ 115200 baud
+Exported: 6/15/2025, 09:15:00 AM
+Characters: 42
+=======================
+
+[09:12:01] The answer is the mitochondria, which produces
+[09:12:18] ATP through cellular respiration.
+
+=======================
+End of log.
+```
+
+## How to export
+
+<Steps>
+  <Step title="Locate the student card">
+    In Teacher View or Exam Mode, find the feed card for the student whose work you want to export. If you are in Teacher View, the card is in the Feed Grid on the right side of the screen.
+  </Step>
+  <Step title="Click the Export button">
+    Hover over the student card to reveal the action buttons in the card header, then click the **Export** button (the file-with-arrow icon). In Exam Mode, use the **Export** button in the toolbar at the top of the screen to download all students at once.
+  </Step>
+  <Step title="Save the downloaded file">
+    Your browser immediately downloads the file to your default downloads folder. The filename is `{studentname}_braille_log.txt`. No dialog or confirmation is required — the file is ready to open as soon as the download completes.
+  </Step>
+</Steps>
+
+## Class-wide export
+
+To download every student's work in one action, click the **Export All** button in the Teacher View toolbar (or the **Export** button in the Exam Mode toolbar). The software produces a single combined `.txt` file named `braille_class_log_{YYYY-MM-DD}.txt` that contains each student's header and timestamped prose log in sequence, separated by labelled dividers. This is useful for archiving a complete examination session in one file.
+
+## What timestamps tell you
+
+<Accordion>
+  <AccordionItem title="Assess writing pace">
+    The gap between consecutive line timestamps shows how long a student paused between words or phrases. Timestamps that are close together indicate fluent, confident writing. Longer gaps can signal hesitation, difficulty recalling an answer, or time spent on the language-toggle gesture. You can use this information to distinguish students who knew the answer immediately from those who worked through it gradually.
+  </AccordionItem>
+  <AccordionItem title="Reconstruct composition order">
+    Because each line is stamped with the time its first character was typed, you can replay the order in which a student built up their answer. If an answer starts with a conclusion and then adds supporting reasoning, the timestamps make that composition strategy visible — something that a finished essay alone would not reveal.
+  </AccordionItem>
+  <AccordionItem title="Detect late edits">
+    If a student used backspace (`SYSTEM:BKSP`) to correct a mistake, the exported log reflects only the final corrected text — deleted characters are removed before export. However, because earlier lines have earlier timestamps, you can infer that material appearing late in the timestamp sequence was added or revised after the initial draft, giving you insight into the student's editing process.
+  </AccordionItem>
+</Accordion>
+
+## Reading Bangla output
+
+Bangla characters are stored internally as UTF-8 Unicode code points and written to the export file in UTF-8 encoding. To read a file containing Bangla text, open it in a text editor that supports Unicode:
+
+- **VS Code** — open the file normally; VS Code defaults to UTF-8.
+- **Notepad** (Windows 10 and later) — open the file normally; modern Notepad supports UTF-8 automatically.
+- **TextEdit** (macOS) — open the file; if the text appears garbled, go to **Format → Make Plain Text** and re-open with UTF-8 encoding selected.
+- **Any other editor** — if Bangla characters display as question marks or boxes, explicitly set the file encoding to **UTF-8** in the editor's settings or open dialog.
+
+<Note>
+  Exports are always available for the entire session, even after you disconnect a student's device. The Teacher Software stores every character received in memory from the moment you connect until you close or refresh the browser tab. Disconnecting a device does not erase the stored data — you can export a student's log at any point during the session, including after the exam has ended.
+</Note>

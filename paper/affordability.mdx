@@ -1,0 +1,53 @@
+---
+title: "BrailleBridge Affordability: Full Bill of Materials and Costs"
+sidebarTitle: "Affordability"
+description: "Complete bill of materials for building one BrailleBridge device: ~$12 total using an ESP32, Outemu switches, 3D-printed enclosure, and standard components."
+---
+
+Affordability and repairability are not secondary features of BrailleBridge — they are core design goals that shaped every component choice from the beginning. A device that costs $1,000 is not accessible technology for schools in low-resource settings; it is inaccessible technology with an accessibility label. Every part in BrailleBridge was selected because it is cheap, standard, widely available, and replaceable without specialist tools or supplier relationships. The total bill of materials for one complete device, including the enclosure, comes to approximately **$12** — making school-wide deployment realistic on the kinds of budgets that actually exist in the classrooms where this device is most needed.
+
+## Bill of materials
+
+The table below lists every component required to build one complete BrailleBridge device. Prices are approximate and based on widely available commodity electronics markets; actual costs may vary slightly by region and supplier.
+
+| Component | Qty | Cost (USD) |
+|---|---|---|
+| ESP32 Dev Module | 1 | $5.00 |
+| Outemu Red switch | 8 | $3.00 |
+| Keycaps (3D-printed) | 8 | $1.00 |
+| LED (3mm) + resistor | 2+2 | $0.30 |
+| Perfboard | 1 | $0.80 |
+| PLA filament (enclosure) | 30g | $1.20 |
+| M3 screws, wire, solder | — | $0.70 |
+| **Total** | | **~$12.00** |
+
+The eight Outemu Red switches cover the six Braille dot keys, Space, and Shift. The two LEDs (one red, one green) provide language-mode feedback. The perfboard provides a stable base for wiring the common ground bus. The 30 g of PLA filament prints the two-piece enclosure shell. Including tools and minor overhead, a complete device can be built for under $15.
+
+## Why this matters
+
+<CardGroup cols={2}>
+  <Card title="School deployment" icon="school">
+    At ~$12 per device, a school can equip an entire examination room of twenty students for roughly the same cost as a single Perkins Brailler. Multiple units can be deployed, maintained, and replaced on the kinds of budgets that schools in low-resource settings actually have — not the budgets that specialist equipment catalogues assume they have.
+  </Card>
+  <Card title="Local repairability" icon="wrench">
+    Every component is a standard, commodity part available from any electronics supplier. A broken Outemu Red switch — the highest-wear component — costs approximately $0.38 to replace. A damaged ESP32 module costs ~$5. No proprietary parts, no manufacturer repair contracts, no minimum order quantities. A teacher or a technically capable student can replace a failed component with a soldering iron and a part ordered online.
+  </Card>
+  <Card title="3D-printable enclosure" icon="cube">
+    The enclosure is designed in Fusion 360 and released as open-source STL files. Any school, makerspace, library, or community centre with an FDM 3D printer can reproduce or repair the enclosure locally. A replacement shell uses approximately 30 g of PLA filament and prints in a few hours. There is no mould, no tooling cost, and no minimum production run — one shell can be printed as easily as a thousand.
+  </Card>
+  <Card title="No proprietary parts" icon="circle-check">
+    Every component in BrailleBridge — the ESP32, Outemu MX-style switches, 3mm LEDs, standard resistors, perfboard, M3 screws, and PLA filament — is a widely available commodity. The Teacher Software runs in any modern browser and requires no licence. The firmware is open source. Nothing about BrailleBridge creates dependency on a single supplier, a specific platform, or a proprietary ecosystem.
+  </Card>
+</CardGroup>
+
+## Compared to alternatives
+
+The cost difference between BrailleBridge and existing solutions is not a matter of degree — it is a matter of kind. A **Perkins Brailler**, the most widely used mechanical Braille writer, costs **$600–$1,000+** per unit. It is durable, reliable, and accepted in examinations, but it produces only embossed output that most sighted teachers cannot read, and when a component fails, specialist repair is typically required.
+
+A **commercial digital Braille display or notetaker** — the closest comparable digital product — costs **$1,000–$5,000+** per unit. These devices offer sophisticated features, but at that price, equipping even five students exceeds the annual technology budget of many schools in the regions where BrailleBridge is most relevant.
+
+**BrailleBridge costs ~$12.** At that price point, a school can afford to equip every blind student who needs it, keep spare units on hand, and replace failed components the same week they break. This is not just a cost advantage — it is the difference between accessible technology that gets deployed and accessible technology that sits in a catalogue.
+
+<Tip>
+  The GitHub repository at [github.com/Solez-ai/braille.bridge](https://github.com/Solez-ai) includes the Fusion 360 CAD source files and ready-to-print STL models for both enclosure shells (`TOP_SHELL.stl` and `BOTTOM_SHELL.stl`), so any school or makerspace with an FDM printer can reproduce or repair the enclosure locally — at the cost of the filament alone.
+</Tip>

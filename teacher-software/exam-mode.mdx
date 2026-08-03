@@ -1,0 +1,49 @@
+---
+title: "Running a Classroom Exam with BrailleBridge Exam Mode"
+sidebarTitle: "Exam Mode"
+description: "Use BrailleBridge Exam Mode to monitor all students side-by-side in a grid view, with large text and real-time chord visualization for every student."
+---
+
+Exam Mode transforms the Teacher Software into a dedicated examination monitoring screen. Instead of managing individual student cards, you see every connected student's typed output simultaneously — laid out in a responsive grid at large 48 px serif text — so you can scan the entire class from a single screen without switching tabs or scrolling through a list. Students continue typing as normal on their BrailleBridge devices; Exam Mode is a teacher-side view only and requires no action from students to activate or deactivate.
+
+## What Exam Mode does
+
+When you switch to Exam Mode, the Teacher Software replaces the Teacher View layout with a full-width grid where every connected student occupies one card. Each card displays the student's live text output at **48 px serif font** — Playfair Display for English and Noto Serif Bengali for Bangla — with a blinking cursor tracking the latest character. The grid layout scales automatically: the browser fits as many cards as possible across the screen based on the available width, with each card requiring a minimum of 360 px. All feeds continue to update in real time as students type, and any character typed in Teacher View before you switched to Exam Mode is carried over and displayed.
+
+## Entering Exam Mode
+
+Add and connect all your students in Teacher View first (see [Connecting Devices](./connecting-devices)), then click the **Exam** button in the header navigation. The software switches immediately to the Exam grid. All students who are currently in the roster — whether connected or offline — appear in the grid. You can switch back to Teacher View at any time without losing any data.
+
+## What you see in Exam Mode
+
+Each student card in the Exam grid contains the following information at a glance:
+
+- **Student name and language badge** — the student's display name and a coloured EN or BN badge showing their current active language, which updates automatically from the device's `LANG:en` / `LANG:bn` messages.
+- **Connection status indicator** — a green **Online** badge if the device is currently connected, or a grey **Offline** badge if it is not.
+- **Live text output at 48 px serif** — every character the student has typed fills the card body in large, highly legible text with auto-scroll and a blinking cursor.
+- **Chord visualization** — a row of six mini-dots at the bottom of each card animates to show which keys the student pressed for their most recent character. The binary chord value (e.g. `0b011001`) is also displayed alongside the dots so you can verify specific inputs if needed.
+- **Character count** — the total number of characters typed by that student, displayed in the card footer next to the chord visualiser.
+
+## Expand modal
+
+If you want to read one student's answer in greater detail without leaving Exam Mode, click anywhere on their card to open the **expand modal** — a full-screen overlay that displays that student's complete typed output at **64 px serif text**. The modal includes the student's name, connection type, baud rate, and a running character count in the header.
+
+To close the expand modal and return to the Exam grid, click anywhere outside the modal or press **Escape**. You can also click the prose-preview icon in the modal header to open a formatted line-by-line log view of the student's output with per-line timestamps.
+
+## During the exam
+
+Keep the following behaviour in mind while an exam is running:
+
+- **All feeds update live** as students type — there is no manual refresh needed.
+- **Invalid chords are flagged** in the feed: if a student presses a combination that the firmware cannot resolve, the device sends an `Invalid` serial message. The Teacher Software discards this message from the display, so invalid attempts do not appear as garbled text.
+- **Language changes are reflected immediately** — when a student toggles between English and Bangla (by holding dots 4+5+6 for 500 ms), the language badge on their card updates within the same serial read cycle.
+- **Backspace is handled transparently** — if a student deletes a character (the device sends `SYSTEM:BKSP`), the last character is removed from their feed and the character count decreases. The export will reflect only the final corrected text.
+- **No student action is required** — Exam Mode is entirely a teacher-side display change. Students do not need to press anything or change any setting on their devices.
+
+<Tip>
+  The 500 ms failsafe refresh runs continuously throughout an exam session. Every half-second, the software rebuilds every student's feed from the stored character array. This means that even during a long exam, a browser repaint or window resize will never cause characters to disappear — the display is always reconstructed from the authoritative data in memory.
+</Tip>
+
+<Note>
+  Exam Mode is a **view-only** monitoring mode for the teacher. It has no effect on student devices or the data being recorded. Students should continue typing as normal — they do not need to know whether the teacher has switched to Exam Mode or not.
+</Note>

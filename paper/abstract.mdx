@@ -1,0 +1,57 @@
+---
+title: "BrailleBridge Research Paper: Project Abstract"
+sidebarTitle: "Abstract"
+description: "The BrailleBridge project abstract: a low-cost bilingual Braille writing system enabling blind students to write independently during classroom examinations."
+---
+
+<Note>
+  This is the interactive version of the BrailleBridge research paper, presented in an accessible format. The original LaTeX paper is available in the GitHub repository at [github.com/Solez-ai](https://github.com/Solez-ai).
+</Note>
+
+BrailleBridge is a low-cost, bilingual digital Braille writing system designed to let blind and visually impaired students write independently — during classwork, assignments, tests, and formal examinations — using the Braille they already know. Today, many blind students must dictate their answers to a sighted writer, sacrificing privacy, independence, and accuracy in the process. BrailleBridge closes that gap with a portable six-key chord keyboard, an ESP32 microcontroller, and a browser-based Teacher Software that translates every Braille chord into readable digital text in real time — for both the student and the teacher — simultaneously, over two independent communication channels.
+
+The device supports English and Bangla (Bharati Braille) from the same hardware, with a Shift modifier that unlocks uppercase letters, Bangla vowel signs, digits, punctuation, and mathematical symbols. The Teacher Software — built with HTML, CSS, and JavaScript using the Web Serial API — runs in any modern browser without installation. It displays each student's translated text as they type, automatically detects language switches, timestamps every character, and can export a complete exam record with a single click. The entire device costs approximately **$12** in components, using standard, locally replaceable parts.
+
+## High-level system architecture
+
+Every Braille chord the student types travels through a clear, five-stage pipeline before arriving as readable text on the teacher's screen.
+
+<Steps>
+  <Step title="Student presses a Braille chord">
+    The student presses one or more of the six mechanical dot keys simultaneously. The 180 ms chording window ensures that all fingers in a single intentional chord are collected together, even if they land milliseconds apart.
+  </Step>
+  <Step title="ESP32 translates the chord">
+    The ESP32 reads the pressed keys, encodes them as a compact 6-bit bitmask value, and looks up the result in the active language dictionary — English or Bangla. If the Shift key is held, a second layer of dictionaries is searched for numbers, punctuation, math symbols, uppercase letters, or Bangla vowel signs.
+  </Step>
+  <Step title="Dual output is sent simultaneously">
+    The translated character is transmitted over **two independent channels at once**: Bluetooth HID (to the student's paired device) and USB Serial (to the Teacher Software on the teacher's computer). Neither channel depends on the other.
+  </Step>
+  <Step title="Student hears the text via TTS">
+    On the student's paired phone, tablet, or computer, the text appears as standard keyboard input. The device's built-in screen reader speaks it aloud, giving the student immediate audible confirmation of what they just typed — without needing to see a screen.
+  </Step>
+  <Step title="Teacher sees readable output in real time">
+    The Teacher Software receives the character over USB Serial through the browser's Web Serial API. It displays the translated text immediately, timestamps it, adds it to the student's exportable record, and updates the live monitoring view — all without the teacher needing to know a single Braille cell.
+  </Step>
+</Steps>
+
+## Key specifications
+
+BrailleBridge is built from standard, affordable components. The table below summarises the complete hardware and software specification at a glance.
+
+| Parameter | Value |
+|---|---|
+| Microcontroller | ESP32 Dev Module |
+| Braille keys | 6 (Outemu Red mechanical switches) |
+| Additional keys | Space, Shift |
+| Chording window | 180 ms |
+| Output channels | Bluetooth HID + USB Serial |
+| Languages | English, Bangla (Bharati Braille) |
+| Shift functions | Caps, numbers, punctuation, math |
+| LED indicators | Red (English), Green (Bangla) |
+| Enclosure | Fusion 360 CAD, FDM 3D-printed |
+| Teacher Software | HTML / CSS / JS (Web Serial API) |
+| Cost | Under $15 per device |
+
+<Tip>
+  **The core design principle:** "BrailleBridge does not replace Braille. It protects Braille as the student's natural writing method while removing the barrier between Braille input and teacher-readable output."
+</Tip>

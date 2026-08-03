@@ -1,20 +1,42 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "BrailleBridge: Bilingual Braille Writing for the Classroom"
+sidebarTitle: "Home"
+description: "BrailleBridge lets blind students write independently with Braille chords while teachers receive real-time, readable digital text. No sighted writer needed."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+BrailleBridge is a low-cost, bilingual digital Braille writing and classroom examination system built for blind and visually impaired students. You press familiar six-dot Braille chords on a physical mechanical keyboard, and an ESP32 microcontroller instantly translates each chord into readable English or Bangla text — delivering the result simultaneously to your own device over Bluetooth and to your teacher's browser-based console over USB Serial. No sighted writer, no privacy trade-offs, no expensive equipment.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn what BrailleBridge is, who it's built for, and the accessibility gap it closes in classrooms and examination halls.
+  </Card>
+  <Card title="How It Works" icon="gears" href="/how-it-works">
+    Follow a Braille chord from keypress to readable text: GPIO reading, 6-bit bitmask encoding, dictionary lookup, and dual output.
+  </Card>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Go from unboxing to your first typed character in four steps: power on, pair via Bluetooth, connect Teacher Software, and type.
+  </Card>
+  <Card title="Teacher Software" icon="display" href="/teacher-software/overview">
+    Explore the browser-based Teacher Software — real-time feeds, exam mode, timestamped exports, and multi-student monitoring.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## The three-step flow
+
+Every character you type passes through the same simple pipeline — from your fingertips to your teacher's screen.
+
+<Steps>
+  <Step title="Student types a chord">
+    You press one or more of the six dot keys simultaneously. The device collects all keys pressed within a 180 ms window so that fingers landing milliseconds apart are always read as a single, intended chord.
+  </Step>
+  <Step title="ESP32 translates the chord">
+    The firmware encodes the pressed dots into a 6-bit bitmask, checks whether Shift is active, looks up the result in the active language dictionary (English or Bangla), and emits the translated character.
+  </Step>
+  <Step title="Teacher sees readable text">
+    The translated character is sent over two independent channels at once: Bluetooth HID to your own phone, tablet, or PC (where a screen reader can read it aloud), and USB Serial to the Teacher Software running in the teacher's browser.
+  </Step>
+</Steps>
+
+<Note>
+  BrailleBridge costs under **$15** per device to build from standard, locally replaceable parts. It supports both **English** (Grade 1 Braille, A–Z, numbers, and punctuation) and **Bangla** (following the Bharati Braille standard), switchable at any time by holding dots 4+5+6 for 500 ms.
+</Note>

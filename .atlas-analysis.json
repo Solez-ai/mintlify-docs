@@ -1,0 +1,97 @@
+{
+  "projectType": "saas",
+  "projectName": "BrailleBridge",
+  "projectDescription": "A low-cost, bilingual (English + Bangla) digital Braille writing and classroom examination system that lets blind students type independently while teachers receive readable digital output in real time.",
+  "theme": "almond",
+  "primaryColor": "#A16207",
+  "lightColor": "#C49A4A",
+  "darkColor": "#713F12",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "introduction",
+              "how-it-works",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Hardware",
+            "pages": [
+              "hardware/overview",
+              "hardware/gpio-mapping",
+              "hardware/enclosure"
+            ]
+          },
+          {
+            "group": "Firmware",
+            "pages": [
+              "firmware/chord-encoding",
+              "firmware/language-switching",
+              "firmware/shift-modifier",
+              "firmware/serial-protocol"
+            ]
+          },
+          {
+            "group": "Teacher Software",
+            "pages": [
+              "teacher-software/overview",
+              "teacher-software/connecting-devices",
+              "teacher-software/exam-mode",
+              "teacher-software/export"
+            ]
+          },
+          {
+            "group": "Braille Reference",
+            "pages": [
+              "reference/english-braille",
+              "reference/bangla-braille",
+              "reference/numbers-symbols"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Research Paper",
+        "groups": [
+          {
+            "group": "Paper",
+            "pages": [
+              "paper/abstract",
+              "paper/problem-statement",
+              "paper/innovation",
+              "paper/comparative-analysis",
+              "paper/affordability"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Six-key Braille chord input with 180 ms chording window",
+    "Bilingual output: English (Grade 1) and Bangla (Bharati Braille)",
+    "Bluetooth HID keyboard output to student's device for TTS feedback",
+    "USB Serial output feeding the web-based Teacher Software",
+    "Language toggle: hold dots 4+5+6 for 500 ms",
+    "Shift modifier for uppercase, numbers, punctuation, math, and Bangla vowel signs",
+    "Teacher Software: multi-student roster, live feed, exam mode, timestamped export",
+    "Web Serial API — no install required, runs in Chrome/Edge",
+    "Under $15 per device — locally repairable components",
+    "3D-printable enclosure (FDM, PLA, Fusion 360 CAD)"
+  ],
+  "publicApiSurface": [
+    "USB Serial protocol: LANG:en, LANG:bn, Invalid, SYSTEM:BKSP, <char>",
+    "BLE device name: BrailleBridge",
+    "Serial baud rate: 115200",
+    "Chord encoding: 6-bit bitmask (dot1=bit0 … dot6=bit5)",
+    "Language toggle chord: 0b111000 held 500 ms",
+    "Shift + A–J → numbers 1–0",
+    "Web Serial API connectStudentSerial(student)",
+    "Export format: [HH:MM:SS] prefixed plain-text .txt"
+  ]
+}

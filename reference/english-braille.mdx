@@ -1,0 +1,85 @@
+---
+title: "English Braille Chord Reference: A–Z with Dot Patterns"
+sidebarTitle: "English Braille"
+description: "Complete English Braille chord reference for BrailleBridge: all 26 letters A–Z with their dot combinations and 6-bit chord values, grouped by Braille decade."
+---
+
+BrailleBridge uses Grade 1 English Braille as its English dictionary — one cell per letter, no contractions. Every letter of the alphabet maps to a unique combination of the six dots in the Braille cell. When you press a combination of the six dome keys simultaneously, the firmware reads them as a 6-bit integer, looks the value up in the English dictionary, and transmits the matching character over Bluetooth. This page gives you the complete A–Z reference so you can verify, practise, or troubleshoot any chord while using the device.
+
+## Understanding the Braille cell
+
+The standard Braille cell is a 2-column, 3-row grid. BrailleBridge mirrors this layout exactly with its six physical keys:
+
+```
+Dot 1 │ Dot 4
+Dot 2 │ Dot 5
+Dot 3 │ Dot 6
+```
+
+Dots 1, 2, and 3 run down the **left column** (top to bottom); dots 4, 5, and 6 run down the **right column** (top to bottom). When the firmware reads a chord, it assigns one bit of a 6-bit integer to each dot:
+
+| Bit position | Dot | Physical key |
+|---|---|---|
+| bit 0 (value 1) | Dot 1 | Top-left |
+| bit 1 (value 2) | Dot 2 | Middle-left |
+| bit 2 (value 4) | Dot 3 | Bottom-left |
+| bit 3 (value 8) | Dot 4 | Top-right |
+| bit 4 (value 16) | Dot 5 | Middle-right |
+| bit 5 (value 32) | Dot 6 | Bottom-right |
+
+The **chord value** is the sum of the values for every dot you press. For example, pressing dots 1 and 2 together gives bit 0 + bit 1 = 1 + 2 = 3 (`0b000011`).
+
+## First decade (A–J)
+
+The first decade uses only the top four dots — dots 1, 2, 4, and 5 — in ten distinct combinations. Every other letter in the alphabet is built on top of these ten patterns.
+
+| Letter | Dots | Chord (binary) | Chord (decimal) |
+|---|---|---|---|
+| A | 1 | `0b000001` | 1 |
+| B | 1, 2 | `0b000011` | 3 |
+| C | 1, 4 | `0b001001` | 9 |
+| D | 1, 4, 5 | `0b011001` | 25 |
+| E | 1, 5 | `0b010001` | 17 |
+| F | 1, 2, 4 | `0b001011` | 11 |
+| G | 1, 2, 4, 5 | `0b011011` | 27 |
+| H | 1, 2, 5 | `0b010011` | 19 |
+| I | 2, 4 | `0b001010` | 10 |
+| J | 2, 4, 5 | `0b011010` | 26 |
+
+## Second decade (K–T)
+
+The second decade repeats the first-decade patterns and adds **dot 3** to each one. If you already know A–J, you know K–T: just press the same chord and add the bottom-left key.
+
+| Letter | Dots | Chord (binary) | Based on |
+|---|---|---|---|
+| K | 1, 3 | `0b000101` | A + dot 3 |
+| L | 1, 2, 3 | `0b000111` | B + dot 3 |
+| M | 1, 3, 4 | `0b001101` | C + dot 3 |
+| N | 1, 3, 4, 5 | `0b011101` | D + dot 3 |
+| O | 1, 3, 5 | `0b010101` | E + dot 3 |
+| P | 1, 2, 3, 4 | `0b001111` | F + dot 3 |
+| Q | 1, 2, 3, 4, 5 | `0b011111` | G + dot 3 |
+| R | 1, 2, 3, 5 | `0b010111` | H + dot 3 |
+| S | 2, 3, 4 | `0b001110` | I + dot 3 |
+| T | 2, 3, 4, 5 | `0b011110` | J + dot 3 |
+
+## Third decade (U–Z)
+
+The third decade takes the first-decade patterns and adds both **dot 3 and dot 6**. The letter W is the one exception to this rule — it does not follow the expected pattern because W does not exist in most other Braille scripts and was added to the standard later.
+
+| Letter | Dots | Chord (binary) |
+|---|---|---|
+| U | 1, 3, 6 | `0b100101` |
+| V | 1, 2, 3, 6 | `0b100111` |
+| W | 2, 4, 5, 6 | `0b111010` *(exception)* |
+| X | 1, 3, 4, 6 | `0b101101` |
+| Y | 1, 3, 4, 5, 6 | `0b111101` |
+| Z | 1, 3, 5, 6 | `0b110101` |
+
+<Tip>
+The chord value for each letter is identical in both English and Bangla mode — the same physical keypress produces the same 6-bit integer. Only the active dictionary changes what character that integer maps to. Switch languages with the built-in toggle (hold dots 4+5+6 for 500 ms) and your muscle memory for chord shapes carries straight across.
+</Tip>
+
+<Note>
+Uppercase letters are produced by holding the **Shift** key while pressing the base letter chord. For example, Shift + the A chord (dot 1) sends `A` instead of `a`. See the **Shift Modifier** page for full details on how the Shift layer works.
+</Note>

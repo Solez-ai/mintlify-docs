@@ -1,0 +1,86 @@
+---
+title: "Shift Key: Numbers, Uppercase, Math, and Bangla Vowel Signs"
+sidebarTitle: "Shift Modifier"
+description: "BrailleBridge's Shift key expands output to uppercase letters, digits 0–9, punctuation, math operators, and Bangla dependent vowel signs without extra hardware."
+---
+
+BrailleBridge's physical Shift key — wired to GPIO 32 and configured as `INPUT_PULLUP` — works exactly like the Shift key on a standard keyboard: hold it while pressing a Braille chord, and the firmware routes that chord through a different set of output tables. A single Shift layer handles uppercase English letters, the digits 0–9, common punctuation, math operators, and Bangla dependent vowel signs (কার/মাত্রা) — all without adding a single extra key to the hardware.
+
+## How Shift works
+
+When your firmware reads the SHIFT pin as `LOW` (pressed), it sets `shiftActive = true` before any chord is processed. Inside `processChord()`, the firmware checks `shiftActive` first. A shifted chord skips the main Braille dictionary entirely and instead checks, in order:
+
+1. **Number table** — the ten chords for A–J produce digits 1–0.
+2. **Shift symbols table** — specific chords produce punctuation and math operators (language-independent).
+3. **Uppercase English** (if English mode) — any base letter chord produces its capital.
+4. **Bangla vowel signs** (if Bangla mode) — any vowel chord produces its dependent vowel sign (মাত্রা).
+
+Releasing Shift before the next chord automatically returns the firmware to the unshifted layer — no lock, no toggle.
+
+## Numbers (Shift + A–J)
+
+Hold Shift and press the chord for any of the first ten Braille letters (A through J) to produce the digits 1 through 0. This follows the standard Braille number convention:
+
+| Shift + | Output | Dots |
+|---|---|---|
+| A | 1 | 1 |
+| B | 2 | 1, 2 |
+| C | 3 | 1, 4 |
+| D | 4 | 1, 4, 5 |
+| E | 5 | 1, 5 |
+| F | 6 | 1, 2, 4 |
+| G | 7 | 1, 2, 4, 5 |
+| H | 8 | 1, 2, 5 |
+| I | 9 | 2, 4 |
+| J | 0 | 2, 4, 5 |
+
+The firmware stores these as a `numberChords[]` array paired with a `numberMap[]` string array, so the lookup is a straight index match — constant time regardless of which digit you type.
+
+## Punctuation
+
+Hold Shift and press one of the following chords to produce common punctuation marks. These work in both English and Bangla modes:
+
+| Symbol | Name | Dots |
+|---|---|---|
+| `,` | Comma | 2 |
+| `;` | Semicolon | 2, 3 |
+| `:` | Colon | 2, 5 |
+| `.` | Period / decimal point | 2, 5, 6 |
+
+## Math operators
+
+Hold Shift and press one of the following chords to produce a math operator. Like punctuation, math operators are language-independent and available in both English and Bangla modes:
+
+| Symbol | Name | Dots |
+|---|---|---|
+| `+` | Plus | 2, 3, 5 |
+| `−` | Minus | 3, 6 |
+| `×` | Multiplication | 2, 3, 6 |
+| `÷` | Division | 3, 4 |
+| `=` | Equals | 2, 3, 5, 6 |
+
+The firmware processes math symbols before punctuation in the `shiftSymbols[]` table, so in any chord conflict between the two categories, the math symbol takes priority.
+
+## Uppercase letters (English mode)
+
+When the device is in English mode and `shiftActive` is `true`, any chord that maps to a lowercase letter in the base dictionary instead produces its uppercase equivalent. The firmware retrieves the lowercase character from `lookupChord(chord, false)`, verifies the result is in the range `'a'`–`'z'`, and subtracts 32 to get the ASCII uppercase code before calling `sendChar()`.
+
+For example: hold Shift and press dot 1 (the chord for `a`) → the device sends `A`.
+
+## Bangla vowel signs / কার (Bangla mode)
+
+When the device is in Bangla mode and `shiftActive` is `true`, pressing a vowel chord produces the corresponding dependent vowel sign (মাত্রা / কার) rather than the independent vowel letter. This lets you write full Bangla syllables naturally — type the consonant unshifted, then add the vowel sign with Shift:
+
+| Independent vowel | Dependent sign | Unicode | Dots |
+|---|---|---|---|
+| আ | া (আ-কার) | U+09BE | 3, 4, 5 |
+| ই | ি (ই-কার) | U+09BF | 2, 4 |
+| উ | ু (উ-কার) | U+09C1 | 1, 3, 6 |
+| এ | ে (এ-কার) | U+09C7 | 1, 5 |
+| ও | ো (ও-কার) | U+09CB | 1, 3, 5 |
+
+The firmware consults the `banglaShiftMap[]` array first. If the chord matches a vowel entry with a non-null `kar` field, it sends the vowel sign. If the chord is `অ` (which has no dependent form), the firmware falls through and outputs the normal Bangla character for that chord instead. Any non-vowel chord in Bangla Shift mode is handled like a normal shifted chord — checked against numbers and symbols first, then the Bangla dictionary.
+
+<Tip>
+  You can alternate freely between typing digits and math operators without switching modes — both live in the same Shift layer and both work in English and Bangla. For example, you can type `3 × 4 = 12` without touching the language toggle at all.
+</Tip>

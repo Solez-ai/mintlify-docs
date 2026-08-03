@@ -1,0 +1,69 @@
+---
+title: "BrailleBridge Teacher Software: Classroom Monitoring Guide"
+sidebarTitle: "Overview"
+description: "The BrailleBridge Teacher Software is a browser-based app for monitoring blind students' Braille typing in real time, with exam mode and timestamped export."
+---
+
+The BrailleBridge Teacher Software is a single-page web application that runs entirely in your browser — no installation, no backend, no database required. You open it in Chrome or Edge, connect your students' BrailleBridge devices over USB, and immediately see every character they type appear on your screen as ordinary readable text. Designed for classroom teachers who may have no knowledge of Braille, it translates each student's six-dot chord input into English or Bangla in real time, logs every character with a wall-clock timestamp, and gives you a side-by-side grid view of the entire class during written examinations.
+
+## System requirements
+
+| Requirement | Details |
+|---|---|
+| Browser | Chrome 89+ or Edge 89+ (Web Serial API required) |
+| OS | Windows, macOS, or Linux |
+| Connection | USB cable from each BrailleBridge device to the teacher's computer |
+| Installation | None — runs directly in the browser |
+
+## Three views
+
+The Teacher Software gives you three distinct views, switchable at any time from the header navigation. Each view is optimised for a different stage of a lesson or examination.
+
+<Tabs>
+  <Tab title="Student View">
+    Student View is a single-connection mode designed for one-on-one monitoring or device testing. You connect a single BrailleBridge device and watch its live text output on the right side of the screen. A large serif display (40–48 px) shows every character the student types, auto-scrolling as their answer grows. Below the live output, a **Recent** panel keeps a scrollable history of the last 80 characters as individual tiles — useful for quickly scanning recent input at a glance.
+
+    On the left panel, a six-dot **Braille Cell** visualiser animates in real time whenever a chord arrives: the relevant dots light up and pulse for 450 ms so you can see exactly which keys the student pressed. Language (English or বাংলা) and Shift state are shown as colour-coded badges that update automatically from the device's serial messages.
+  </Tab>
+  <Tab title="Teacher View">
+    Teacher View is your multi-student classroom hub. You maintain a **Class Roster** in the left panel, where each student has a name, connection type (USB or Bluetooth), baud rate, and a connect/disconnect button. The right panel shows a scrollable **Feed Grid** — one card per student — where you can watch every student's typed output simultaneously.
+
+    Each student card shows the student's name, language badge, live connection status, a chord visualiser with six mini-dots, and a character count. A toolbar at the top of the feed grid displays the total number of students and total characters typed across the class. You can also export all students' logs at once or clear all feeds from the toolbar. Student names and settings are saved automatically so the roster is ready the next time you open the app.
+  </Tab>
+  <Tab title="Exam View">
+    Exam View switches the entire screen to a full-width grid layout showing every connected student's feed simultaneously at 48 px serif text. It is designed for use during a written examination, when you need to monitor the whole class at once from a single screen.
+
+    Each card in the grid shows the student's name, language badge, online/offline status, live 48 px text output with a blinking cursor, a chord visualiser, and a character count. You can click any student card to open a full-screen 64 px expand modal for close reading without leaving Exam View. An **Export** button in the toolbar downloads a combined timestamped log for all students.
+  </Tab>
+</Tabs>
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Multi-student roster" icon="users">
+    Manage any number of students in a single session. Each student has their own name, COM port assignment, baud rate setting, and an independent serial reader loop. Add or remove students at any time without affecting other connections.
+  </Card>
+  <Card title="Live real-time display" icon="display">
+    Characters appear on screen the instant a student presses a chord. The serif display (Playfair Display for Latin text, Noto Serif Bengali for Bangla) auto-scrolls to the latest character and shows a blinking gold cursor, making it easy to follow along at a glance.
+  </Card>
+  <Card title="Language auto-detection" icon="language">
+    Each BrailleBridge device sends a `LANG:en` or `LANG:bn` serial message whenever the student toggles their language. The Teacher Software reads this message and instantly updates the student's language badge — you always know which language each student is currently writing in.
+  </Card>
+  <Card title="Exam mode" icon="grid">
+    Switch to a full-width grid showing all connected students side by side at 48 px text. The layout is designed for a single teacher to monitor an entire class at a glance during a written examination, with each student's chord activity and character count visible in real time.
+  </Card>
+  <Card title="Timestamped export" icon="file-export">
+    Every character is stored with its exact wall-clock time. When you click **Export**, the software produces a plain-text `.txt` file where each line of the student's answer is prefixed with an `[HH:MM:SS]` timestamp — giving you a precise record of what was written and when.
+  </Card>
+  <Card title="Light/dark theme" icon="moon">
+    Press **Ctrl+Shift+T** at any time to toggle between dark mode (default) and light mode. Your preference is saved in browser localStorage and restored the next time you open the app — no configuration needed.
+  </Card>
+</CardGroup>
+
+<Note>
+  A **500 ms failsafe interval** runs continuously in the background. Every half-second, the software rebuilds every student's feed display from the underlying stored character array. This means that even if the browser re-renders a panel, resizes the window, or briefly loses focus, no character is ever lost — the display is always reconstructed from the authoritative in-memory data.
+</Note>
+
+<Tip>
+  Ready to connect your first device? Head to [Connecting Devices](./connecting-devices) for a step-by-step walkthrough of adding students, assigning COM ports, and confirming a live connection.
+</Tip>

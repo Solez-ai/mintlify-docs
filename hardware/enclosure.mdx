@@ -1,0 +1,66 @@
+---
+title: "3D-Printed BrailleBridge Enclosure: Assembly and Files"
+sidebarTitle: "Enclosure"
+description: "Download and print the BrailleBridge enclosure using the included STL files. Two-piece FDM shell with MX-compatible switch cutouts, M3 screw assembly."
+---
+
+The BrailleBridge enclosure is a two-piece 3D-printed shell designed to hold the ESP32, perfboard, eight Outemu switches, and optional battery in a compact, desk-friendly form factor. Because the design is an open CAD model rather than an injection-mould tooling file, any school, makerspace, or engineering student with access to a standard FDM printer can produce a complete enclosure for roughly **$1.20 in filament**. If a shell cracks or a switch cutout wears out, you simply reprint the affected part.
+
+## STL files
+
+The repository includes two ready-to-slice STL files in the `models/` directory:
+
+| File | Description |
+|---|---|
+| `models/TOP_SHELL.stl` | Top half of the enclosure — holds the switch plate and keycap openings |
+| `models/BOTTOM_SHELL.stl` | Bottom half — houses the ESP32, perfboard, and optional battery |
+
+Both files were designed in **Fusion 360** and exported as watertight STL meshes. You can open either file in any slicer (PrusaSlicer, Cura, Bambu Studio, etc.) without modification, or re-import them into Fusion 360 if you want to adapt the design for a different switch layout or board size.
+
+## Print settings
+
+| Parameter | Value |
+|---|---|
+| Material | PLA |
+| Layer height | 0.2 mm |
+| Filament per device | ~30 g |
+| Printer type | FDM (any standard FDM printer) |
+| Assembly fasteners | M3 screws |
+
+Standard PLA at 0.2 mm layers gives a good balance of surface finish and print speed. You do not need an enclosure-grade material such as PETG or ABS unless the device will be stored in a hot car or exposed to direct sunlight for extended periods — a standard classroom or exam hall environment is well within PLA's operating range.
+
+## Design features
+
+The enclosure was designed with both usability and manufacturability in mind:
+
+- **Rounded outer corners** for comfortable desk use — no sharp edges under the heels of your hands during long writing sessions
+- **Raised tactile keycap markings** so you can locate each dot key by touch without looking down, matching the tactile nature of Braille itself
+- **MX-compatible switch cutouts** that let Outemu switches snap in securely — no adhesive, no solder on the plate, and no special tooling required
+- **Space and Shift keys at outer edges** of the cell, matching the physical layout described in the [Key layout section](/hardware/overview#key-layout) of the Hardware Overview
+- **LED openings with light-diffusing channels** so the Red and Green status LEDs are clearly visible from a normal desk-viewing angle without requiring external light pipes
+- **Internal cavity for ESP32 + wiring + optional 3.7 V Li-ion battery** with a USB-C charging breakout board — enabling a wireless, cable-free experience when running from battery power
+
+## Assembly steps
+
+<Steps>
+  <Step title="Print top and bottom shells">
+    Slice `models/TOP_SHELL.stl` and `models/BOTTOM_SHELL.stl` using your preferred slicer with the settings above. Print both shells flat-side down; no supports are required for the standard orientation. Allow the prints to cool fully before handling.
+  </Step>
+  <Step title="Snap Outemu switches into MX cutouts">
+    Press each Outemu Red switch into its MX-compatible cutout on the top shell from above. The switch clips should audibly click into place. No glue is needed — the snap-fit holds the switch securely during normal use and still allows removal if a switch needs replacing.
+  </Step>
+  <Step title="Seat the ESP32 in the bottom cavity">
+    Place your wired perfboard and ESP32 into the internal cavity of the bottom shell. Route the signal wires from the switches through the internal channel to the perfboard. Refer to the [GPIO Mapping](/hardware/gpio-mapping) page for the exact pin-to-switch connections before closing the shell.
+  </Step>
+  <Step title="Close the shell with M3 screws">
+    Align the top and bottom shells and fasten them together with M3 screws at each corner post. Tighten finger-tight — the PLA bosses do not need high torque, and over-tightening can crack the posts.
+  </Step>
+</Steps>
+
+<Tip>
+  Because the enclosure is a parametric CAD model rather than a fixed mould, any school or maker with an FDM printer can reproduce or repair it locally — no specialist facilities needed. If you modify the design in Fusion 360, the MX switch cutout dimensions are 14.0 mm × 14.0 mm with 1.5 mm retaining clip notches on the sides; keep these values if you want off-the-shelf Outemu or Cherry MX switches to snap in without modification.
+</Tip>
+
+<Note>
+  Before closing the enclosure in the final assembly step, verify every wire connection against the pin assignments on the [GPIO Mapping](/hardware/gpio-mapping) page. It is much easier to trace and correct a wiring mistake with the shell open than after it is screwed shut.
+</Note>

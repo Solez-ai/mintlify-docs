@@ -1,0 +1,63 @@
+---
+title: "BrailleBridge Hardware: Components and Bill of Materials"
+sidebarTitle: "Overview"
+description: "Explore the BrailleBridge hardware components: ESP32 microcontroller, Outemu mechanical switches, LED indicators, and the complete bill of materials."
+---
+
+BrailleBridge is built entirely from standard, off-the-shelf components that you can source locally in most countries for roughly **$12 per device**. Every part was chosen for low cost, long service life, and easy replacement — so that a school or maker can repair or reproduce the device without specialist tools or proprietary parts. This page introduces each component, explains why it was chosen, and provides the full bill of materials so you can order or verify your own build.
+
+## Components at a glance
+
+| Component | Qty | Approx. cost (USD) |
+|---|---|---|
+| ESP32 Dev Module | 1 | $5.00 |
+| Outemu Red switch | 8 | $3.00 |
+| Keycaps (3D-printed) | 8 | $1.00 |
+| LED (3 mm) + 220 Ω resistor | 2 + 2 | $0.30 |
+| Perfboard | 1 | $0.80 |
+| PLA filament (enclosure, ~30 g) | — | $1.20 |
+| M3 screws, wire, solder | — | $0.70 |
+| **Total** | | **~$12.00** |
+
+<Note>
+  All components in this table are locally available and replaceable for a few dollars each. If a switch fails in the field, you can swap in any MX-style replacement without modifying the enclosure or firmware.
+</Note>
+
+## ESP32 microcontroller
+
+The ESP32 Dev Module is the brain of BrailleBridge. At roughly **$5**, it packs a 240 MHz dual-core processor, built-in Bluetooth Low Energy (BLE), and a USB-UART bridge onto a single 38-pin development board. Because BLE is built in, you do not need a proprietary wireless dongle or receiver — the student's phone, tablet, or laptop pairs directly with the device as a standard Bluetooth HID keyboard. The USB-UART bridge simultaneously streams the same translated characters to the teacher's computer over a serial connection, giving you two independent output channels from one chip.
+
+<Tip>
+  The ESP32 firmware is written in C++ on the **Arduino framework**, which means you can edit, compile, and flash it using the free Arduino IDE — no proprietary toolchain required. Thousands of community libraries, including the `BleKeyboard` library used here, are available through the Arduino Library Manager.
+</Tip>
+
+## Mechanical switches
+
+BrailleBridge uses **Outemu Red** linear mechanical switches for all eight keys (six Braille dot keys, Space, and Shift). Outemu Reds are MX-compatible, meaning they fit the same PCB footprints and keycap stems as Cherry MX switches at a fraction of the price. Their linear actuation provides consistent, smooth travel with no tactile bump to interrupt a chord — important because you are pressing several keys at once and need each to register without physical resistance fighting your other fingers.
+
+The switches are rated for approximately **50 million press cycles**, which equates to years of intensive daily classroom use before a replacement is needed. All eight switches share a common ground bus on the perfboard, and the ESP32's internal `INPUT_PULLUP` resistors mean an unpressed switch reads `HIGH` and a pressed switch reads `LOW` — no external pull-up resistors are needed for the input lines.
+
+## LED indicators
+
+Two 3 mm LEDs — Red on GPIO 18 and Green on GPIO 19, each with a 220 Ω current-limiting resistor — give you instant visual confirmation of the device state without looking at any screen.
+
+| State | Red LED | Green LED |
+|---|---|---|
+| English mode | ON | OFF |
+| Bangla mode | OFF | ON |
+| Valid character (100 ms flash) | ON | ON |
+| Invalid chord (blinks 3×) | blinks | blinks |
+
+When you switch languages by holding dots 4, 5, and 6 for 500 ms, the LEDs update immediately to reflect the new active language. When you type a recognised chord, both LEDs flash together for 100 ms to confirm the character was accepted. When you press an unrecognised combination, both LEDs blink three times in quick succession so you know to try again — without any audio that might disturb an exam hall.
+
+## Key layout
+
+The physical key layout mirrors the standard six-dot Braille cell. The **left column** holds dot keys 1, 2, and 3 from top to bottom; the **right column** holds dot keys 4, 5, and 6 from top to bottom. This matches the mental model you already have if you know Braille, so no relearning is required.
+
+```
+Dot 1   Dot 4
+Dot 2   Dot 5
+Dot 3   Dot 6
+```
+
+The **Space** key sits at the far left outer edge of the device, and the **Shift** key sits at the far right outer edge. Holding Shift while pressing a chord activates the shift layer — uppercase letters in English mode, vowel signs (কার/matra) in Bangla mode, and numbers or math symbols in either mode. Both the Space and Shift keys have the same Outemu Red switch underneath, so the feel is consistent across all eight keys.
