@@ -1,14 +1,14 @@
 ---
-title: "BrailleBridge Research Paper: Project Abstract"
+title: "BrailleBridge: Project Abstract and System Overview"
 sidebarTitle: "Abstract"
-description: "The BrailleBridge project abstract: a low-cost bilingual Braille writing system enabling blind students to write independently during classroom examinations."
+description: "A low-cost bilingual Braille writing system that lets blind students write independently, with real-time readable output delivered to the teacher."
 ---
 
-<Note>
-  This is the interactive version of the BrailleBridge research paper, presented in an accessible format. The original LaTeX paper is available in the GitHub repository at [github.com/Solez-ai](https://github.com/Solez-ai).
-</Note>
-
 BrailleBridge is a low-cost, bilingual digital Braille writing system designed to let blind and visually impaired students write independently — during classwork, assignments, tests, and formal examinations — using the Braille they already know. Today, many blind students must dictate their answers to a sighted writer, sacrificing privacy, independence, and accuracy in the process. BrailleBridge closes that gap with a portable six-key chord keyboard, an ESP32 microcontroller, and a browser-based Teacher Software that translates every Braille chord into readable digital text in real time — for both the student and the teacher — simultaneously, over two independent communication channels.
+
+<Note>
+  This is the interactive version of the BrailleBridge research paper, presented in an accessible format. The full project repository is available at [github.com/Solez-ai](https://github.com/Solez-ai).
+</Note>
 
 The device supports English and Bangla (Bharati Braille) from the same hardware, with a Shift modifier that unlocks uppercase letters, Bangla vowel signs, digits, punctuation, and mathematical symbols. The Teacher Software — built with HTML, CSS, and JavaScript using the Web Serial API — runs in any modern browser without installation. It displays each student's translated text as they type, automatically detects language switches, timestamps every character, and can export a complete exam record with a single click. The entire device costs approximately **$12** in components, using standard, locally replaceable parts.
 
@@ -50,7 +50,7 @@ BrailleBridge is built from standard, affordable components. The table below sum
 | LED indicators | Red (English), Green (Bangla) |
 | Enclosure | Fusion 360 CAD, FDM 3D-printed |
 | Teacher Software | HTML / CSS / JS (Web Serial API) |
-| Cost | Under $15 per device |
+| Cost | ~$12 per device |
 
 <Tip>
   **The core design principle:** "BrailleBridge does not replace Braille. It protects Braille as the student's natural writing method while removing the barrier between Braille input and teacher-readable output."

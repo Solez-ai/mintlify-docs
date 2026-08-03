@@ -19,28 +19,28 @@ BrailleBridge is designed for two groups of people whose needs have historically
 The most common workaround in classrooms today — dictating answers to a sighted writer — creates a cascade of problems for the student. BrailleBridge is designed to address each one directly.
 
 <CardGroup cols={2}>
-  <Card title="Problem: Loss of privacy" icon="eye-slash">
+  <Card title="Problem: Loss of privacy" icon="eye-slash" href="/introduction#the-problem-it-solves">
     Answers must be spoken aloud for a writer to record. Nothing stays private in an examination setting.
   </Card>
-  <Card title="Solution: Silent chord input" icon="lock">
+  <Card title="Solution: Silent chord input" icon="lock" href="/introduction#the-problem-it-solves">
     You type Braille chords silently. Only the translated text reaches the teacher — never the raw composition process.
   </Card>
-  <Card title="Problem: Loss of independence" icon="person-chalkboard">
+  <Card title="Problem: Loss of independence" icon="person-chalkboard" href="/introduction#the-problem-it-solves">
     Someone else controls the final written record and decides how your words are interpreted or spelled.
   </Card>
-  <Card title="Solution: Direct authorship" icon="pen-nib">
+  <Card title="Solution: Direct authorship" icon="pen-nib" href="/introduction#the-problem-it-solves">
     You produce the output yourself. The device translates exactly what you press — nothing is filtered, interpreted, or delayed by a third party.
   </Card>
-  <Card title="Problem: Teacher can't read Braille" icon="file-circle-xmark">
+  <Card title="Problem: Teacher can't read Braille" icon="file-circle-xmark" href="/introduction#the-problem-it-solves">
     Embossed Braille is unreadable to most sighted teachers, so student work goes unassessed or unverified in real time.
   </Card>
-  <Card title="Solution: Instant readable text" icon="display">
+  <Card title="Solution: Instant readable text" icon="display" href="/introduction#the-problem-it-solves">
     The Teacher Software displays every character as plain English or Bangla text the moment you type it — no Braille knowledge needed.
   </Card>
-  <Card title="Problem: High cost of existing tools" icon="circle-dollar-to-slot">
+  <Card title="Problem: High cost of existing tools" icon="circle-dollar-to-slot" href="/introduction#the-problem-it-solves">
     Mechanical braillers cost $600–$1,000+. Commercial digital Braille devices cost $1,000–$5,000+. Many schools cannot afford them.
   </Card>
-  <Card title="Solution: Under $15 per device" icon="tags">
+  <Card title="Solution: Under $15 per device" icon="tags" href="/introduction#the-problem-it-solves">
     BrailleBridge is built from a ~$5 ESP32, ~$3 of Outemu Red switches, a 3D-printed enclosure, and a handful of standard components — totalling roughly $12.
   </Card>
 </CardGroup>
@@ -56,22 +56,22 @@ BrailleBridge consists of two parts that work together.
 ## Key capabilities
 
 <CardGroup cols={3}>
-  <Card title="Bilingual: English + Bangla" icon="language">
+  <Card title="Bilingual: English + Bangla" icon="language" href="/how-it-works#language-switching">
     Supports Grade 1 English Braille and the full Bharati Braille standard for Bangla — vowels, consonants by varga, vowel signs, halant, anusvara, visarga, and candrabindu — on the same device with the same keys.
   </Card>
-  <Card title="Bluetooth HID keyboard" icon="bluetooth">
+  <Card title="Bluetooth HID keyboard" icon="bluetooth" href="/how-it-works#dual-output-channels">
     Pairs with any phone, tablet, or PC as a standard Bluetooth keyboard. No proprietary receiver, no drivers, no additional software needed.
   </Card>
-  <Card title="Web Serial teacher console" icon="globe">
+  <Card title="Web Serial teacher console" icon="globe" href="/teacher-software/overview">
     The Teacher Software uses the Web Serial API to read directly from the device in Chrome or Edge. No installation, no database, no server required.
   </Card>
-  <Card title="Under $15 total cost" icon="coins">
+  <Card title="Under $15 total cost" icon="coins" href="/hardware/overview">
     The entire bill of materials — ESP32, switches, keycaps, LEDs, perfboard, PLA filament, and hardware — comes to approximately $12, making classroom-scale deployment realistic.
   </Card>
-  <Card title="3D-printed enclosure" icon="cube">
+  <Card title="3D-printed enclosure" icon="cube" href="/hardware/overview">
     The two-shell enclosure (top and bottom) is modelled in Fusion 360 and printed on any FDM printer. MX-compatible cutouts let the eight Outemu switches snap in without glue or additional hardware.
   </Card>
-  <Card title="Classroom exam mode" icon="graduation-cap">
+  <Card title="Classroom exam mode" icon="graduation-cap" href="/teacher-software/overview">
     The Teacher Software's Exam Mode places every connected student in a monitoring grid on a single screen, with per-character timestamps and one-click export to `.txt` for each student.
   </Card>
 </CardGroup>

@@ -1,7 +1,7 @@
 ---
-title: "BrailleBridge USB Serial Protocol Reference"
+title: "BrailleBridge USB Serial Protocol: Complete Reference"
 sidebarTitle: "Serial Protocol"
-description: "Complete reference for the BrailleBridge USB Serial protocol: baud rate, message types (LANG:en, LANG:bn, Invalid, SYSTEM:BKSP), and connection setup."
+description: "Complete BrailleBridge USB Serial reference: baud rate, message types (LANG:en, LANG:bn, and characters), Web Serial API setup, and custom integrations."
 ---
 
 BrailleBridge sends every translated character and every system event over USB Serial at 115200 baud — simultaneously with the Bluetooth HID output. The Teacher Software reads this stream through the Web Serial API running in a browser tab, but any application that can open a serial port at the right settings will work. This page covers the full connection parameters, every message type the device emits, and how to consume the stream in JavaScript or any other language.
@@ -28,20 +28,19 @@ Every message from BrailleBridge is a single newline-terminated UTF-8 string. Th
 |---|---|---|
 | `LANG:en` | Device → Host | Active language switched to English |
 | `LANG:bn` | Device → Host | Active language switched to Bangla |
-| `Invalid` | Device → Host | Chord pressed but not found in the active dictionary |
-| `SYSTEM:BKSP` | Device → Host | Backspace — remove the last character from the display |
 | `<char>` | Device → Host | A single translated Unicode character (e.g. `a`, `অ`, `×`) |
 
-The Teacher Software uses `LANG:en` and `LANG:bn` to update the language badge shown beside each student's name in real time. It uses `SYSTEM:BKSP` to pop the last character from the student's live answer buffer. `Invalid` is logged as a diagnostic event and does not modify the answer text.
+The Teacher Software uses `LANG:en` and `LANG:bn` to update the language badge shown beside each student's name in real time. Translated characters arrive as plain UTF-8 and are appended directly to the student's live answer buffer.
 
 ## Reading the serial stream
 
 The Teacher Software connects to each student's device using the Web Serial API and reads the stream inside a dedicated `readLoop()` per student. Each character or status message arrives as a plain string and is passed immediately to `handleStudentChar()` for processing:
 
-```javascript Connecting to BrailleBridge via Web Serial API
+```javascript
+// Connecting to BrailleBridge via Web Serial API
 async function connectStudentSerial(student) {
   const port = await navigator.serial.requestPort();
-  await port.open({ baudRate: student.baud });
+  await port.open({ baudRate: 115200 });
   student.serialPort = port;
   student.connected = true;
 
@@ -80,7 +79,8 @@ Common options:
 - **Node.js** — use the [`serialport`](https://serialport.io/) package. The `ReadlineParser` splits on `\n` automatically.
 - **Serial terminal** — tools like PuTTY, minicom, or the Arduino IDE Serial Monitor at 115200 baud will display the raw stream directly, which is useful for debugging chord mappings.
 
-```python Reading BrailleBridge output with Python pyserial
+```python
+# Reading BrailleBridge output with Python pyserial
 import serial
 
 port = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1)
@@ -88,7 +88,7 @@ port = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1)
 while True:
     line = port.readline().decode('utf-8').strip()
     if line:
-        print(line)  # e.g. "a", "LANG:bn", "অ", "Invalid"
+        print(line)  # e.g. "a", "LANG:bn", "অ"
 ```
 
 Because the protocol is nothing more than newline-delimited UTF-8 strings, you can pipe it into log files, databases, accessibility tools, or any classroom management software that accepts a text feed — no custom driver or proprietary SDK required.

@@ -1,7 +1,7 @@
 ---
-title: "ESP32 GPIO Pin Mapping for BrailleBridge"
+title: "BrailleBridge ESP32 GPIO Pin Mapping and Wiring Guide"
 sidebarTitle: "GPIO Mapping"
-description: "Complete GPIO pin assignments for the BrailleBridge ESP32 firmware: all six Braille dot inputs, Space, Shift, and both LED outputs with their resistor values."
+description: "Complete GPIO pin assignments for the BrailleBridge ESP32 firmware: all six Braille dot inputs, Space, Shift, and both LED outputs with resistor values."
 ---
 
 This page lists every GPIO pin assignment used by the BrailleBridge firmware. Knowing the exact pin numbers matters both during initial assembly — so you connect each switch and LED to the correct pad on the ESP32 Dev Module — and during troubleshooting, when you need to probe individual signals to isolate a fault. If a key feels unresponsive, you can verify continuity between the switch terminal and the GPIO listed here; if an LED is dark, you can confirm the output pin and resistor are intact before touching the firmware.
@@ -45,15 +45,15 @@ Each Braille dot maps to a single bit position in an unsigned 8-bit integer. Dot
 
 The function that builds this value from the six GPIO readings is reproduced below exactly as it appears in the firmware:
 
-```cpp readChord() — reading all 6 dot pins
+```cpp title="readChord() — reading all 6 dot pins"
 uint8_t readChord() {
   uint8_t chord = 0;
-  if (digitalRead(PIN_DOT1) == LOW) chord |= (1 << 0);
-  if (digitalRead(PIN_DOT2) == LOW) chord |= (1 << 1);
-  if (digitalRead(PIN_DOT3) == LOW) chord |= (1 << 2);
-  if (digitalRead(PIN_DOT4) == LOW) chord |= (1 << 3);
-  if (digitalRead(PIN_DOT5) == LOW) chord |= (1 << 4);
-  if (digitalRead(PIN_DOT6) == LOW) chord |= (1 << 5);
+  if (digitalRead(DOT_1) == LOW) chord |= (1 << 0);
+  if (digitalRead(DOT_2) == LOW) chord |= (1 << 1);
+  if (digitalRead(DOT_3) == LOW) chord |= (1 << 2);
+  if (digitalRead(DOT_4) == LOW) chord |= (1 << 3);
+  if (digitalRead(DOT_5) == LOW) chord |= (1 << 4);
+  if (digitalRead(DOT_6) == LOW) chord |= (1 << 5);
   return chord;
 }
 ```

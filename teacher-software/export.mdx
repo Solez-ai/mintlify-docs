@@ -1,10 +1,10 @@
 ---
 title: "Exporting Student Work from BrailleBridge Teacher Software"
 sidebarTitle: "Export"
-description: "Export each student's typed examination answers as a timestamped plain-text file. Every character includes an [HH:MM:SS] timestamp for pace and fluency assessment."
+description: "Download each student's exam answers as a plain-text file. Every line is prefixed with an [HH:MM:SS] timestamp for pace and fluency assessment."
 ---
 
-After your students finish typing, the Teacher Software lets you download each student's complete answer as a plain-text file with a single click. Every line of text is prefixed with an `[HH:MM:SS]` wall-clock timestamp derived from the moment each word was first typed, giving you not just what the student wrote but a precise record of when they wrote it. You can use these files for grading, fluency assessment, or archiving examination records.
+After your students finish typing, the Teacher Software lets you download each student's complete answer as a plain-text file with a single click. Every line of text is prefixed with an `[HH:MM:SS]` wall-clock timestamp derived from the moment the first character on that line was typed, giving you not just what the student wrote but a precise record of when they wrote it. You can use these files for grading, fluency assessment, or archiving examination records.
 
 ## Export format
 
@@ -48,17 +48,17 @@ To download every student's work in one action, click the **Export All** button 
 
 ## What timestamps tell you
 
-<Accordion>
-  <AccordionItem title="Assess writing pace">
+<AccordionGroup>
+  <Accordion title="Assess writing pace">
     The gap between consecutive line timestamps shows how long a student paused between words or phrases. Timestamps that are close together indicate fluent, confident writing. Longer gaps can signal hesitation, difficulty recalling an answer, or time spent on the language-toggle gesture. You can use this information to distinguish students who knew the answer immediately from those who worked through it gradually.
-  </AccordionItem>
-  <AccordionItem title="Reconstruct composition order">
+  </Accordion>
+  <Accordion title="Reconstruct composition order">
     Because each line is stamped with the time its first character was typed, you can replay the order in which a student built up their answer. If an answer starts with a conclusion and then adds supporting reasoning, the timestamps make that composition strategy visible — something that a finished essay alone would not reveal.
-  </AccordionItem>
-  <AccordionItem title="Detect late edits">
+  </Accordion>
+  <Accordion title="Detect late edits">
     If a student used backspace (`SYSTEM:BKSP`) to correct a mistake, the exported log reflects only the final corrected text — deleted characters are removed before export. However, because earlier lines have earlier timestamps, you can infer that material appearing late in the timestamp sequence was added or revised after the initial draft, giving you insight into the student's editing process.
-  </AccordionItem>
-</Accordion>
+  </Accordion>
+</AccordionGroup>
 
 ## Reading Bangla output
 

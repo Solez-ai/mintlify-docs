@@ -46,14 +46,14 @@ Student names, connection types, and baud rate settings are automatically saved 
 
 ## Troubleshooting
 
-<Accordion>
-  <AccordionItem title="The port picker shows no devices">
+<AccordionGroup>
+  <Accordion title="The port picker shows no devices">
     The browser's port picker will only list devices that the operating system has already recognised. Ensure the BrailleBridge device is plugged in via USB and has been powered on — the red LED on the device should be illuminated. If the LED is off, check the USB cable and try a different port. On Windows, you can confirm the device is detected by opening **Device Manager** and looking for a COM port under *Ports (COM & LPT)*. On macOS, check **System Information → USB**.
-  </AccordionItem>
-  <AccordionItem title="Text stops appearing">
+  </Accordion>
+  <Accordion title="Text stops appearing">
     If a student's feed stops updating mid-session, first check the physical USB cable — a loose connector is the most common cause. Try clicking **Disconnect** on the student's card and then **Connect** again to re-establish the reader loop. Because the 500 ms failsafe interval continuously rebuilds each feed from the stored character array, no characters that were already received are lost during a reconnect — the feed will resume exactly where it left off.
-  </AccordionItem>
-  <AccordionItem title="Wrong language shown">
+  </Accordion>
+  <Accordion title="Wrong language shown">
     The language badge updates automatically whenever the device sends a `LANG:en` or `LANG:bn` serial message, which the student triggers by holding dots 4, 5, and 6 simultaneously for 500 ms. If the badge shows the wrong language, ask the student to toggle their language once (hold dots 4+5+6 for 500 ms) to send a fresh language message — the badge will correct itself immediately.
-  </AccordionItem>
-</Accordion>
+  </Accordion>
+</AccordionGroup>

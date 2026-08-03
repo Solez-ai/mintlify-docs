@@ -62,8 +62,8 @@ Every character you type travels through the following sequence inside the ESP32
   <Step title="Output character">
     A valid character is transmitted over both output channels simultaneously: as a Bluetooth HID keystroke to the paired device and as a UTF-8 character over USB Serial at 115200 baud to the Teacher Software.
   </Step>
-  <Step title="LED flash confirmation">
-    Both LEDs flash briefly (approximately 100 ms) to confirm a valid character was accepted. For an invalid chord, both LEDs blink three times in rapid succession as a tactile-free error signal.
+  <Step title="Confirmation feedback">
+    On devices with LEDs enabled, both LEDs flash briefly (approximately 100 ms) to confirm a valid character was accepted. For an invalid chord, both LEDs blink three times in rapid succession as a tactile-free error signal. Invalid chords also send the message `Invalid` over USB Serial so the Teacher Software can display appropriate feedback.
   </Step>
   <Step title="Wait for next chord">
     The chord buffer resets and the firmware returns to its idle state, waiting for the next keypress.
@@ -81,12 +81,19 @@ BrailleBridge sends every translated character over two independent channels at 
 
   **Channel 2 — USB Serial (Teacher Software)**
 
-  The same character is simultaneously sent over USB Serial at 115200 baud. The browser-based Teacher Software connects to this serial port via the Web Serial API in Chrome or Edge. Each character appears in the student's live feed the moment it is typed, with a `[HH:MM:SS]` timestamp attached. Language change events (`LANG:en` and `LANG:bn`) and invalid chord rejections (`Invalid`) are also sent over this channel so the Teacher Software can update its language indicator and display appropriate feedback.
+  The same character is simultaneously sent over USB Serial at 115200 baud. The browser-based Teacher Software connects to this serial port via the Web Serial API in Chrome or Edge. Each character appears in the student's live feed the moment it is typed, with a `[HH:MM:SS]` timestamp attached. The following control messages are also sent over this channel so the Teacher Software can react accordingly:
+
+  | Serial message | Meaning |
+  | -------------- | ------- |
+  | `LANG:en` | Language switched to English |
+  | `LANG:bn` | Language switched to Bangla |
+  | `Invalid` | Unrecognised chord rejected |
+  | `SYSTEM:BKSP` | Backspace — delete the last character from the student's feed |
 </Note>
 
 ## LED indicators
 
-The two status LEDs on the top of the device give you continuous, glanceable feedback without requiring you to look at a screen.
+Devices assembled with the two status LEDs wired and enabled give you continuous, glanceable feedback without requiring you to look at a screen.
 
 | LED state | Meaning |
 | --------- | ------- |
@@ -95,11 +102,15 @@ The two status LEDs on the top of the device give you continuous, glanceable fee
 | Both flash ON for ~100 ms | Valid character successfully translated and sent |
 | Both blink 3 times rapidly | Invalid chord — no matching entry in the active dictionary |
 
+<Note>
+  LED feedback requires the Red (GPIO 18) and Green (GPIO 19) LEDs to be physically wired and the LED code enabled in the firmware. If your device does not show LED changes, check that the LED pins are connected and that the LED helper functions are uncommented in the firmware.
+</Note>
+
 ## Language switching
 
 You switch between English and Bangla by holding **dots 4, 5, and 6 simultaneously for 500 ms**. The chord `0b111000` (dots 4+5+6) is not assigned to any English letter or Bangla character, which means accidental switching during normal typing is practically impossible.
 
-When you trigger the switch, the firmware toggles an internal boolean flag, updates the LED (Red for English, Green for Bangla), and immediately sends either `LANG:en` or `LANG:bn` over USB Serial so the Teacher Software can update its language indicator for your feed in real time.
+When you trigger the switch, the firmware toggles the active language flag and immediately sends either `LANG:en` or `LANG:bn` over USB Serial so the Teacher Software can update its language indicator for your feed in real time. On devices with LEDs wired and enabled, the Red LED turns on for English and the Green LED turns on for Bangla.
 
 From that point forward, every chord you press is looked up in the newly active dictionary — the same physical keys produce different output depending on the language mode, just as Bharati Braille intends.
 
@@ -123,6 +134,6 @@ Here is a complete walkthrough of what happens when you press dots 1 and 4 toget
 
 **Stage 7 — Output:** The character `'c'` is sent as a Bluetooth HID keystroke to your paired device, and as the byte `0x63` over USB Serial to the Teacher Software. If Shift had been held, the lookup would have returned `'C'` (uppercase) or the digit `3` (from the Shift number layer, since C corresponds to the third letter A–J → 1–0).
 
-**Stage 8 — LED flash:** Both LEDs flash for ~100 ms confirming a valid character.
+**Stage 8 — Confirmation feedback:** On devices with LEDs enabled, both LEDs flash for ~100 ms confirming a valid character.
 
 **Stage 9 — Reset:** The chord buffer clears. The device waits for your next keypress.

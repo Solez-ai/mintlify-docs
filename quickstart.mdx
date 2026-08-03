@@ -1,5 +1,5 @@
 ---
-title: "Get Started with BrailleBridge in Your Classroom"
+title: "BrailleBridge Quickstart: From Unboxing to First Character"
 sidebarTitle: "Quickstart"
 description: "Set up BrailleBridge from unboxing to first typed character in four steps: power on, pair via Bluetooth, connect Teacher Software, and start typing."
 ---
@@ -10,11 +10,11 @@ This guide gets you from an unboxed BrailleBridge device to your first typed cha
   <Step title="Power on the device">
     Connect the BrailleBridge device to any USB power source — a phone charger, a laptop port, or a USB power bank — using the device's USB cable. The ESP32 draws its power and serial connection from this same cable.
 
-    Once powered, watch the LEDs:
-    - The **Red LED turns on** and stays on. This tells you the device has booted, the firmware is running, and English mode is active.
-    - The **Green LED stays off**. You are in English mode by default.
-
     The device is now ready to pair and translate Braille chords. No button presses, no configuration menus, and no power switch to find — powering via USB is all it takes.
+
+    <Info>
+      On devices assembled with status LEDs wired and enabled, the **Red LED turns on** and stays on at boot, confirming that the firmware is running and English mode is active. If your device does not show LED activity, the hardware is still fully functional — the LEDs are an optional visual indicator.
+    </Info>
   </Step>
   <Step title="Pair via Bluetooth">
     On your phone, tablet, or PC, open the Bluetooth settings and scan for new devices. You will see a device named **BrailleBridge** appear in the list of available keyboards.
@@ -45,16 +45,20 @@ This guide gets you from an unboxed BrailleBridge device to your first typed cha
     A green connected indicator appears next to the student's name. The live text feed for that student is now active — every character they type will appear here in real time.
   </Step>
   <Step title="Type your first chord">
-    With the cursor placed in a text field on the student's Bluetooth-paired device, press **dot 1** (top-left key) and **dot 4** (top-right key) together. Hold them for no more than 180 ms — then release both.
+    With the cursor placed in a text field on the student's Bluetooth-paired device, press **dot 1** (top-left key) and **dot 4** (top-right key) together, then release both.
 
     Here is what you will observe:
-    - **Both LEDs flash** briefly (approximately 100 ms), confirming the chord was valid and the character was sent.
     - The letter **'c'** appears in the focused text field on the student's device. Your screen reader announces "c".
     - The letter **'c'** appears in the student's live feed in the Teacher Software on the teacher's screen.
+    - On devices with LEDs enabled, **both LEDs flash** briefly (approximately 100 ms) to confirm the chord was valid and the character was sent.
 
     Congratulations — you have typed your first BrailleBridge character. The chord you pressed (`0b001001`, dots 1 and 4) is the standard Grade 1 Braille cell for the letter C, and BrailleBridge translated it exactly as written.
 
-    From here, continue typing Braille chords to build words. Press the **Space key** (the wider key to the left) to insert a space. Hold the **Shift key** while pressing a chord to access uppercase letters, digits (Shift + A through J = 1 through 0), punctuation, and math symbols. To switch to Bangla, hold **dots 4+5+6** together for 500 ms — the Red LED will turn off, the Green LED will turn on, and the device will begin translating Bangla Bharati Braille chords.
+    <Info>
+      The firmware opens a 180 ms window from the first keypress to collect all the dots in your chord. You do not need to hit every dot at the exact same millisecond — fingers that land within that window are all merged into one chord automatically.
+    </Info>
+
+    From here, continue typing Braille chords to build words. Press the **Space key** (the wider key to the left) to insert a space. Hold the **Shift key** while pressing a chord to access uppercase letters, digits (Shift + A through J = 1 through 0), punctuation, and math symbols. To switch to Bangla, hold **dots 4+5+6** together for 500 ms — the device will begin translating Bangla Bharati Braille chords, and the Green LED will illuminate (on devices with LEDs wired and enabled).
   </Step>
 </Steps>
 
