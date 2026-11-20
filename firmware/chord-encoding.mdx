@@ -57,6 +57,16 @@ if (chordBits != 0 && !anyDot) {
   **Stuck-Key Safety Guard:** If a chord other than `0b111000` (Dots 4+5+6 language switch) remains held without changing for `CHORD_HOLD_MAX_MS = 5000` ms, `loop()` commits it automatically and resets `chordBits`.
 </Info>
 
+## Throughput & WPM Performance (Why Decode-on-Release Replaced 180 ms)
+
+Earlier prototypes used a fixed `180 ms` chord collection timer (plus a `50 ms` post-commit lockout = `230 ms` minimum cycle, capping theoretical output near **~52 WPM** and lagging any faster burst). That fixed timer caused two failure modes:
+- **Slow / deliberate chords (`> 180 ms` finger skew)**: A late-landing finger was split into a second, unintended single-dot character.
+- **Fast Perkins-style chording (`40–70 WPM` sustained, `80–100+ WPM` peak)**: Experienced typists often complete a full chord press-and-release in **`60–110 ms`** — either waiting idly for the `180 ms` timer or accidentally merging two rapid consecutive letters into one chord.
+
+With **decode-on-release (`allReleased`) + `15 ms` `PinFilter` debounce**:
+- **Zero artificial wait**: Chords commit the exact millisecond all dots lift, supporting **100+ WPM** bursts while still giving beginners unlimited time to place fingers accurately.
+- **Live software tuning (no re-flashing)**: Desktop and BLE/Serial hosts can send `DEBOUNCE:<5..50>`, `WINDOW:<0|50..300>` (`0` = instant decode-on-release), or `RESET_TIMING` at runtime.
+
 ## Dot 6 Capital Sign (`CAPS_OFF` / `CAPS_ONCE` / `CAPS_LOCK`)
 
 Pressing **Dot 6 alone** (`0b100000`) without `SHIFT` cycles the `CapsMode` state machine and broadcasts the state to connected hosts:

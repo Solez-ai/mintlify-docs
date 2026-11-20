@@ -18,7 +18,7 @@ Every Braille chord the student types travels through a clear, five-stage pipeli
 
 <Steps>
   <Step title="Student presses a Braille chord">
-    The student presses one or more of the six mechanical dot keys simultaneously. The 180 ms chording window ensures that all fingers in a single intentional chord are collected together, even if they land milliseconds apart.
+    The student presses one or more of the six mechanical dot keys simultaneously. Using a **decode-on-release** state machine with `15 ms` switch debouncing, all fingers in an intentional chord are accumulated regardless of finger skew and committed the instant the keys release — supporting **100+ WPM** without artificial timer lag.
   </Step>
   <Step title="ESP32 translates the chord">
     The ESP32 reads the pressed keys, encodes them as a compact 6-bit bitmask value, and looks up the result in the active language dictionary — English or Bangla. If the Shift key is held, a second layer of dictionaries is searched for numbers, punctuation, math symbols, uppercase letters, or Bangla vowel signs.
@@ -43,7 +43,7 @@ BrailleBridge is built from standard, affordable components. The table below sum
 | Microcontroller | ESP32 Dev Module |
 | Braille keys | 6 (Outemu Red mechanical switches) |
 | Additional keys | Space, Shift |
-| Chording window | 180 ms |
+| Chording engine | Decode-on-release + 15 ms debounce (live-tunable) |
 | Output channels | Bluetooth HID + USB Serial |
 | Languages | English, Bangla (Bharati Braille) |
 | Shift functions | Caps, numbers, punctuation, math |
