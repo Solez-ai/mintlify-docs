@@ -1,0 +1,30 @@
+---
+title: "Multi-Device Bluetooth (BLE) & USB Serial Engine"
+sidebarTitle: "Multi-Device BLE & Serial"
+description: "How RelayManager and BleManager discover, connect, and auto-reconnect multiple BrailleBridge devices simultaneously over bleak, WinRT, and pyserial."
+---
+
+In a classroom, a teacher's PC needs to listen to many student BrailleBridge units at once without manual COM-port juggling. `braille-desktop/relay.py` achieves this with a unified **`RelayManager`** + **`BleManager`** architecture.
+
+## Concurrent Multi-Bridge Pool
+
+- `RelayManager` maintains `self._conns` (`port_name -> conn dict`) and runs a background `_monitor_loop` every **`SCAN_INTERVAL = 3.0`** seconds for auto-discovery and automatic reconnect.
+- `RelayBridge` (`QObject`) emits `sig_data`, `sig_ports`, and `sig_event` signals so background `asyncio` BLE tasks and `pyserial` threads never touch Qt UI widgets directly.
+
+## Bluetooth Discovery (`BleManager`)
+
+`BleManager` runs a dedicated `asyncio` event loop thread and combines two discovery paths:
+
+1. **Windows Paired / System-Connected BLE (`winrt`)**: `_discover_winrt_paired_or_connected()` inspects `BluetoothLEDevice`, `BluetoothConnectionStatus.CONNECTED`, and `DeviceInformation` so already-paired devices appear immediately without re-advertising.
+2. **Active BLE Advertising Scan (`bleak`)**: `BleakScanner.discover(timeout=2.5, return_adv=True)` matches devices whose advertised name contains `'braille'`, `'bridge'`, or `'esp32'`, or whose service list includes `NUS_SERVICE_UUID` (`6e400001-b5a3-f393-e0a9-e50e24dcca9e`).
+
+For each connected student device, `BleakClient` subscribes to **`NUS_TX_UUID`** (`6e400002-...`) for incoming characters/events and sends `LANG:en` / `LANG:bn` commands via `write_nus()` on **`NUS_RX_UUID`** (`6e400003-...`).
+
+## USB Serial & Bluetooth HID Modes
+
+- **USB Serial (`pyserial`)**: Opens `serial.Serial(port_name, int(baud), timeout=0.1)` (default `115200` baud; also supports `9600`, `57600`, `38400`) with a dedicated `_read_loop` thread (`READ_SIZE = 256`) and Windows `HKLM\HARDWARE\DEVICEMAP\SERIALCOMM` registry fallback.
+- **Bluetooth HID Keyboard (`"KEYBOARD"`)**: Student View can also capture OS keyboard events directly in `keyPressEvent` (`1–6` dots, `Alt+L` language toggle, `Alt+S` shift toggle).
+
+## ESP32 Boot & Control Filtering
+
+When an ESP32 resets over USB, ROM bootloader messages are automatically stripped by `BOOT_PREFIXES` (`'ets '`, `'rst:0x'`, `'boot:0x'`, `'configSPIWP'`, `'clk_drv:'`, `'mode:DIO'`, `'load:0x'`, `'entry 0x'`, etc.), while `CONTROL_PREFIXES` (`'SYSTEM:'`, `'LANG:'`, `'Invalid'`, `'SHIFT'`) update UI state badges cleanly instead of polluting student text.

@@ -1,76 +1,47 @@
 ---
-title: "BrailleBridge Quickstart: From Unboxing to First Character"
+title: "Quickstart"
 sidebarTitle: "Quickstart"
-description: "Set up BrailleBridge from unboxing to first typed character in four steps: power on, pair via Bluetooth, connect Teacher Software, and start typing."
+description: "Power up a BrailleBridge device, connect via Bluetooth (or USB Serial), launch the Desktop or Android Teacher Console, and type your first chord."
 ---
 
-This guide gets you from an unboxed BrailleBridge device to your first typed character in four steps. You need the hardware device, a USB cable (Micro-USB to USB-A or USB-C depending on your ESP32 module), a phone, tablet, or PC for Bluetooth pairing, and a second computer running Chrome or Edge for the Teacher Software. The entire setup takes less than five minutes.
+Get a BrailleBridge BB1 unit connected to a student device and a teacher console in under five minutes.
 
 <Steps>
-  <Step title="Power on the device">
-    Connect the BrailleBridge device to any USB power source — a phone charger, a laptop port, or a USB power bank — using the device's USB cable. The ESP32 draws its power and serial connection from this same cable.
+  <Step title="Power on the BB1 hardware">
+    Insert `4×AA` batteries into the battery pack and flip the slide power switch **ON** (or plug a Micro-USB cable into the 38-pin ESP32 DevKit).
 
-    The device is now ready to pair and translate Braille chords. No button presses, no configuration menus, and no power switch to find — powering via USB is all it takes.
-
-    <Info>
-      On devices assembled with status LEDs wired and enabled, the **Red LED turns on** and stays on at boot, confirming that the firmware is running and English mode is active. If your device does not show LED activity, the hardware is still fully functional — the LEDs are an optional visual indicator.
-    </Info>
+    - Battery `+` routes through the slide switch and `1N5819` Schottky diode (`D1`) into the ESP32 `V5`/`VIN` pin.
+    - On boot, the firmware prints `SYSTEM: BrailleBridge Connected. Waiting for BLE...` on USB Serial (`115200` baud) and begins BLE advertising as **`BrailleBridge`**.
   </Step>
-  <Step title="Pair via Bluetooth">
-    On your phone, tablet, or PC, open the Bluetooth settings and scan for new devices. You will see a device named **BrailleBridge** appear in the list of available keyboards.
 
-    Select **BrailleBridge** and confirm the pairing request. The device pairs as a standard Bluetooth HID keyboard — the same class as any wireless keyboard you have used before.
+  <Step title="Pair via Bluetooth on Student or Teacher device">
+    Open Bluetooth settings on Windows, macOS, Android, or iOS and pair with **`BrailleBridge`**.
 
-    <Info>
-      BrailleBridge requires no drivers, no proprietary receiver dongle, and no manufacturer app. It works out of the box with any Bluetooth-capable device running Android, iOS, Windows, macOS, or ChromeOS. Your existing screen reader (TalkBack, VoiceOver, Narrator, or ChromeVox) will automatically read each translated character aloud as you type.
-    </Info>
-
-    Once paired, open any app with a text field — a notes app, a message compose window, or a document editor — and place the cursor inside it. BrailleBridge will type directly into that field.
+    <Tabs>
+      <Tab title="PyQt6 Desktop App (Recommended)">
+        ```bash
+        cd braille-desktop
+        pip install -r requirements.txt
+        python main.py
+        ```
+        - In **Student View**, select **BLE: BrailleBridge** (or **USB Serial** / **Bluetooth HID Keyboard**).
+        - In **Teacher View**, click **Add Student**, choose **Bluetooth (BLE)**, select each student's BrailleBridge unit, and click **Connect**. Multiple bridges connect simultaneously.
+      </Tab>
+      <Tab title="Android Companion App">
+        Open **BrailleBridge** on Android 7.0+ (`minSdk 24`), grant Bluetooth Scan/Connect permissions, and tap **Add Student** or **Scan BLE** in **Teacher** mode. `BleProxyService` maintains concurrent GATT connections in the background.
+      </Tab>
+      <Tab title="Website Live Demo">
+        Open [solez.vercel.app](https://solez.vercel.app) in Chrome or Edge, scroll to the **Live Interactive Pad**, and click **Connect BLE** (`navigator.bluetooth`) or **Connect USB** (`navigator.serial`).
+      </Tab>
+    </Tabs>
   </Step>
-  <Step title="Connect Teacher Software">
-    On the teacher's computer, plug the same BrailleBridge USB cable into a USB port. The device is now connected over both Bluetooth (to the student's device) and USB Serial (to the teacher's computer) simultaneously.
 
-    Open the Teacher Software in **Google Chrome** or **Microsoft Edge**:
-
-    <Warning>
-      The Teacher Software uses the **Web Serial API**, which is only available in Chromium-based browsers. Firefox and Safari do not support Web Serial and will not be able to connect. Always use Chrome or Edge.
-    </Warning>
-
-    Once the Teacher Software is open:
-    1. Click **Add Student** and enter the student's name.
-    2. Select the correct **COM port** from the dropdown (on Windows it appears as `COMx`; on macOS/Linux as `/dev/tty.usbserial-xxxx` or `/dev/ttyUSB0`).
-    3. Leave the baud rate at the default **115200**.
-    4. Click **Connect**.
-
-    A green connected indicator appears next to the student's name. The live text feed for that student is now active — every character they type will appear here in real time.
-  </Step>
   <Step title="Type your first chord">
-    With the cursor placed in a text field on the student's Bluetooth-paired device, press **dot 1** (top-left key) and **dot 4** (top-right key) together, then release both.
+    Press **Dot 1** (top-left) and **Dot 4** (top-right) together, then release both keys.
 
-    Here is what you will observe:
-    - The letter **'c'** appears in the focused text field on the student's device. Your screen reader announces "c".
-    - The letter **'c'** appears in the student's live feed in the Teacher Software on the teacher's screen.
-    - On devices with LEDs enabled, **both LEDs flash** briefly (approximately 100 ms) to confirm the chord was valid and the character was sent.
-
-    Congratulations — you have typed your first BrailleBridge character. The chord you pressed (`0b001001`, dots 1 and 4) is the standard Grade 1 Braille cell for the letter C, and BrailleBridge translated it exactly as written.
-
-    <Info>
-      The firmware opens a 180 ms window from the first keypress to collect all the dots in your chord. You do not need to hit every dot at the exact same millisecond — fingers that land within that window are all merged into one chord automatically.
-    </Info>
-
-    From here, continue typing Braille chords to build words. Press the **Space key** (the wider key to the left) to insert a space. Hold the **Shift key** while pressing a chord to access uppercase letters, digits (Shift + A through J = 1 through 0), punctuation, and math symbols. To switch to Bangla, hold **dots 4+5+6** together for 500 ms — the device will begin translating Bangla Bharati Braille chords, and the Green LED will illuminate (on devices with LEDs wired and enabled).
+    - The character **`c`** appears immediately in the active feed (and via BLE HID on any focused text field).
+    - **Tap Shift** (`25–1500 ms` with no dots) to send **Backspace**.
+    - **Hold Shift + Chord** for digits (`1–0`), symbols (`+ - × = ÷ , ; : .`), uppercase letters, or Bangla vowel signs (matras).
+    - **Hold Dots 4+5+6 for 500 ms** to toggle between **English** (`LANG:en`) and **Bangla** (`LANG:bn`).
   </Step>
 </Steps>
-
-## What's next
-
-Now that you have a working setup, explore the full capabilities of each component.
-
-<CardGroup cols={2}>
-  <Card title="Hardware overview" icon="microchip" href="/hardware/overview">
-    Dive into the GPIO mapping, bill of materials, 3D-printed enclosure, shift modifier layers, and the complete English and Bangla Braille dictionaries.
-  </Card>
-  <Card title="Teacher Software overview" icon="display" href="/teacher-software/overview">
-    Learn how to manage a multi-student roster, use Exam Mode to monitor a full class, export timestamped transcripts, and customise the interface.
-  </Card>
-</CardGroup>

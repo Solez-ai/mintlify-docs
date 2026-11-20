@@ -1,0 +1,60 @@
+---
+title: "Desktop Application Overview (PyQt6)"
+sidebarTitle: "Overview"
+description: "Native PyQt6 desktop suite for Windows, macOS, and Linux — multi-bridge BLE + USB Serial, Student/Teacher/Logs/Learn views, TTS, and universal local storage."
+---
+
+The BrailleBridge Desktop App (`braille-desktop/`) is a native **PyQt6** application (`BrailleBridgeWindow`) engineered for school classrooms, individual learners, and exam invigilators. It replaces the legacy browser-only Web Serial prototype with persistent local storage, simultaneous multi-device Bluetooth & USB Serial connections, SVG vector icons (`icons.py`), and Light/Dark themes.
+
+## Installation & Dependencies
+
+From `braille-desktop/requirements.txt`:
+
+```text
+PyQt6>=6.6.0
+bleak>=0.22.0
+pyserial>=3.5
+pyttsx3>=2.90
+```
+
+```bash
+cd braille-desktop
+pip install -r requirements.txt
+python main.py
+```
+
+## Architecture & Core Modules
+
+| File | Responsibility |
+|---|---|
+| `main.py` | `BrailleBridgeWindow(QMainWindow)` with 4 stacked views (`student`, `teacher`, `logs`, `learn`), `BrailleDotButton`, `MiniBrailleCell`, `StatusDot`, and `ThemePalette.DARK` / `LIGHT` |
+| `relay.py` | `RelayManager` (concurrent BLE + USB Serial pool), `BleManager` (`bleak` + Windows `winrt`), `RelayBridge` (`QObject` thread-safe Qt signals), ROM `BOOT_PREFIXES` filter, JSON & `.log` persistence |
+| `protocol.py` | Complete English & Bangla Braille dictionary parity, `SmartFormatter`, `decode_text_to_steps`, `translate_text` (Google Translate), and `SpeechEngine` |
+| `icons.py` | Crisp Lucide-style SVG icon renderer for Light and Dark modes |
+
+## Four Application Modes
+
+<CardGroup cols={2}>
+  <Card title="Student View" icon="keyboard">
+    Interactive 6-dot `BrailleDotButton` pad, Commit/Space/Backspace controls, Bento KPI row, expandable **Live Output**, Speech/Lang/Caps/Shift toggles, Google Translate, and **Send to Teacher Roster**.
+  </Card>
+  <Card title="Teacher View" icon="users">
+    2-column multi-student grid supporting **multiple simultaneous BLE & USB bridges**, live `MiniBrailleCell` dot display, **Expand** modal, **Test** simulator, **Export**, **Clear**, and **Remove**.
+  </Card>
+  <Card title="Logs View" icon="file-lines">
+    Replaces legacy Exam View: per-student session archive with `SmartFormatter` block rendering (`title`, `heading`, `question`, `answer`, `math`, `callout`, `bullet`), **Plain Text** toggle, Translate, and `.txt` export.
+  </Card>
+  <Card title="Learn View" icon="graduation-cap">
+    **Freeplay Playground** (with word-level TTS on Space + `Repeat Last Word` + `Export Progress`) and **See What Codes You Need** chord-by-chord lookup trainer (`decode_text_to_steps`).
+  </Card>
+</CardGroup>
+
+## Universal Cross-Platform Data Directory
+
+`get_app_data_dir()` in `relay.py` stores classroom data per user so the app works identically on any PC (overridable via `BRAILLEBRIDGE_DATA_DIR`):
+
+- **Windows**: `%LOCALAPPDATA%\BrailleBridge`
+- **macOS**: `~/Library/Application Support/BrailleBridge`
+- **Linux**: `~/.local/share/BrailleBridge`
+
+Persisted files: `roster.json` (last 2,000 chars per student), `assignments.json`, `student_logs.json` (capped at 200 entries), `settings.json`, plus timestamped `.log` transcripts in `logs/`.

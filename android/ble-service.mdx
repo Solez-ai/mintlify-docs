@@ -1,0 +1,35 @@
+---
+title: "Android Multi-Bridge BLE Service (`BleProxyService`)"
+sidebarTitle: "BLE Service & GATT"
+description: "How BleProxyService and BleDeviceConn maintain simultaneous GATT connections to multiple BrailleBridge units with MTU 247, CCCD watchdogs, and UTF-8 reassembly."
+---
+
+`BleProxyService` (`braillebridge/app/src/main/java/.../ble/BleProxyService.kt`) runs as an Android foreground service (`FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE`) so classroom connections stay alive even when the screen dims or the teacher switches apps.
+
+## Simultaneous Multi-Device Pool
+
+`BleProxyService` maintains a thread-safe map of active hardware connections keyed by BLE MAC address:
+
+```kotlin
+private val connections = ConcurrentHashMap<String, BleDeviceConn>()
+```
+
+Each entry binds to a student via `SettingsStore.getAssignments()` (`studentName -> deviceAddress`) or manual pairing inside `BleScanDialog` / `AddStudentDialog`.
+
+## GATT Lifecycle (`BleDeviceConn.kt`)
+
+| Step | Implementation |
+|---|---|
+| **Transport & UUIDs** | `TRANSPORT_LE` connecting to NUS `6E400001-B5A3-F393-E0A9-E50E24DCCA9E` (`TX = 6E400002`, `RX = 6E400003`, `CCCD = 00002902`) |
+| **MTU & Priority** | Calls `requestMtu(247)` and `CONNECTION_PRIORITY_HIGH` for minimal chording latency |
+| **CCCD Watchdog** | Writes `ENABLE_NOTIFICATION_VALUE` to `CCCD_UUID` and schedules a **`2,500 ms`** retry watchdog if `!notificationsFlowing` |
+| **Auto-Reconnect** | Exponential backoff starting at `1,000 ms` doubling up to `10,000 ms` |
+| **Stream Pipeline** | Raw GATT bytes → `Utf8Reassembler` → `LineFeed` (routes `CONTROL_PREFIXES` and suppresses boot noise via `BootFilter`, `SUPPRESS_TIMEOUT_MS = 2000L`) |
+
+## Native OS Pickup & Periodic Scanning
+
+`BleProxyService` discovers devices matching `isBrailleBridgeDevice()` (`"BrailleBridge"`, `"Braille"`, or `"ESP32"`) through three triggers:
+
+1. **System-Connected & Bonded Pickup**: `checkSystemConnectedDevices()` reads `BluetoothProfile.GATT` connected devices, `bondedDevices`, and saved `assignments`.
+2. **Broadcast Events**: Listens for `ACTION_ACL_CONNECTED`, `ACTION_BOND_STATE_CHANGED`, `ACTION_CONNECTION_STATE_CHANGED`, and `GATT_CONNECTED_DEVICES_CHANGED` (API 33+).
+3. **Periodic & Manual Scans**: `startPeriodicScanner()` polls every `15 s` with a `4 s` `SCAN_MODE_LOW_POWER` window when any assigned device is disconnected; `startManualScan()` runs a `7 s` `SCAN_MODE_LOW_LATENCY` burst.

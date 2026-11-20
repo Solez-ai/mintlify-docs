@@ -1,116 +1,76 @@
 ---
-title: "Braille Chord Encoding: How BrailleBridge Reads Keys"
+title: "Chord Encoding & Decode-on-Release Engine"
 sidebarTitle: "Chord Encoding"
-description: "Learn how BrailleBridge encodes simultaneous Braille key presses into a 6-bit chord value using the ESP32 GPIO pins and a 180 ms collection window."
+description: "How braile.ino debounces switches, accumulates 6-bit Braille bitmasks, handles Dot 6 Capital Sign, and decodes on key release."
 ---
 
-When you press a Braille key combination on BrailleBridge, the ESP32 firmware collapses all six dot switches into a single 6-bit integer — a *chord value* — and looks it up in the active dictionary. This page explains exactly how that encoding works, why the 180 ms collection window exists, and what happens between your fingertips and the character that appears on screen.
+BrailleBridge uses **Grade 1 uncontracted 6-dot Braille** for English and **Bharati Braille** for Bangla, decoded inside `braile/braile.ino`.
 
-## What is chording?
+## 15 ms Stability Debounce
 
-In standard Braille, one character is formed by pressing multiple dots at the same time. BrailleBridge mirrors this: you press whichever dots make up a letter, release them, and the firmware translates the combined pattern into a character. This technique is called **chording**.
-
-The challenge with physical keys is that your fingers never land in perfect unison — even a fast typist will touch dot 1 a few milliseconds before dot 4. If the firmware processed each key press the instant it detected a `LOW` signal, a single intended character would be split across multiple readings. The **180 ms collection window** solves this by giving all your fingers time to land before the firmware commits to a translation.
-
-## The 6-bit bitmask
-
-BrailleBridge maps each of the six Braille dots to one bit in an unsigned 8-bit integer:
-
-| Dot | GPIO | Bit position | Bitmask |
-|-----|------|-------------|---------|
-| Dot 1 | 14 | Bit 0 | `0b000001` |
-| Dot 2 | 12 | Bit 1 | `0b000010` |
-| Dot 3 | 13 | Bit 2 | `0b000100` |
-| Dot 4 | 27 | Bit 3 | `0b001000` |
-| Dot 5 | 26 | Bit 4 | `0b010000` |
-| Dot 6 | 25 | Bit 5 | `0b100000` |
-
-All six pins are configured as `INPUT_PULLUP`, meaning they read `HIGH` at rest and go `LOW` when you press the key. Inside the main loop, the firmware polls all six pins and OR-assigns the corresponding bit for every pin that reads `LOW`:
+Every switch input passes through a `PinFilter` state machine (`DEBOUNCE_MS = 15`). A transition only becomes `f.stable` after the raw `digitalRead(f.pin) == LOW` state stays unchanged for at least `15 ms`:
 
 ```cpp
-// Accumulate pressed dots into currentChord
-bool d1 = digitalRead(DOT_1) == LOW;
-bool d2 = digitalRead(DOT_2) == LOW;
-bool d3 = digitalRead(DOT_3) == LOW;
-bool d4 = digitalRead(DOT_4) == LOW;
-bool d5 = digitalRead(DOT_5) == LOW;
-bool d6 = digitalRead(DOT_6) == LOW;
-
-if (d1) currentChord |= (1 << 0);
-if (d2) currentChord |= (1 << 1);
-if (d3) currentChord |= (1 << 2);
-if (d4) currentChord |= (1 << 3);
-if (d5) currentChord |= (1 << 4);
-if (d6) currentChord |= (1 << 5);
+void updateFilters() {
+  unsigned long t = millis();
+  for (int i = 0; i < PIN_COUNT; i++) {
+    bool r = (digitalRead(filters[i].pin) == LOW);
+    if (r != filters[i].raw) {
+      filters[i].raw = r;
+      filters[i].lastChange = t;
+    } else if ((t - filters[i].lastChange) >= DEBOUNCE_MS) {
+      filters[i].stable = r;
+    }
+  }
+}
 ```
 
-The result is a number between `0` and `63` (`0b000000`–`0b111111`). Each possible 6-bit pattern corresponds to at most one character per language, so dictionary lookup is a simple linear scan — no parsing, no state machine.
+## Decode-on-Release State Machine
 
-## The 180 ms collection window
-
-The main loop accumulates pressed dots into `currentChord` on every iteration. Once the first dot goes `LOW`, the firmware starts a timer using `millis()`. After 180 ms, or as soon as all keys are released, the firmware commits the accumulated chord and calls `processChord()`:
+Rather than committing after a fixed `180 ms` timer, `loop()` accumulates bits in `chordBits` as long as **any** dot key is held and evaluates the chord the moment **all** dot keys release (`!anyDot`):
 
 ```cpp
-// Chord detection with 180 ms window (from loop())
+uint8_t curMask = 0;
+if (pressed(P_D1)) curMask |= (1 << 0);
+if (pressed(P_D2)) curMask |= (1 << 1);
+if (pressed(P_D3)) curMask |= (1 << 2);
+if (pressed(P_D4)) curMask |= (1 << 3);
+if (pressed(P_D5)) curMask |= (1 << 4);
+if (pressed(P_D6)) curMask |= (1 << 5);
+
+bool anyDot = (curMask != 0);
 if (anyDot) {
-  if (!chordActive) {
-    chordActive = true;
-    pressStartTime = millis();
-    currentChord = 0;
-  }
-  // accumulate dots (see above)
+  if (chordBits == 0) chordStartTime = now;
+  if (curMask != chordBits) lastChordChangeTime = now;
+  chordBits |= curMask;
+  if (shiftDown) shiftWasUsed = true;
 }
 
-if (chordActive) {
-  unsigned long elapsed = millis() - pressStartTime;
-  bool allReleased = !anyDot;
-
-  if (allReleased || elapsed > 180) {
-    processChord(currentChord);
-    chordActive = false;
-    currentChord = 0;
-  }
+if (chordBits != 0 && !anyDot) {
+  processChord(chordBits, shiftWasUsed);
+  chordBits = 0;
+  shiftWasUsed = false;
 }
 ```
 
-If you release all keys before 180 ms elapses, the firmware processes the chord immediately — so fast typists are never delayed by the full window.
+<Info>
+  **Stuck-Key Safety Guard:** If a chord other than `0b111000` (Dots 4+5+6 language switch) remains held without changing for `CHORD_HOLD_MAX_MS = 5000` ms, `loop()` commits it automatically and resets `chordBits`.
+</Info>
 
-## Worked example — typing 'C'
+## Dot 6 Capital Sign (`CAPS_OFF` / `CAPS_ONCE` / `CAPS_LOCK`)
 
-<Steps>
-  <Step title="Press dots 1 and 4">
-    You press down dot 1 (GPIO 14) and dot 4 (GPIO 27) simultaneously. Both pins go `LOW`.
-  </Step>
-  <Step title="Firmware sets bits 0 and 3">
-    The loop reads GPIO 14 as `LOW` → sets bit 0. Reads GPIO 27 as `LOW` → sets bit 3. The running `currentChord` accumulates to `0b001001`.
-  </Step>
-  <Step title="Chord value = 9">
-    `0b001001` in decimal is **9**. The firmware holds this value as the window continues to accumulate (in case more dots land).
-  </Step>
-  <Step title="180 ms window closes">
-    No other dots were pressed. The firmware calls `processChord(9)`.
-  </Step>
-  <Step title="Shift is not held">
-    The firmware reads GPIO 32 (`SHIFT`) as `HIGH` — not pressed. `shiftActive` is `false`.
-  </Step>
-  <Step title="English mode — lookupChord(9, false) returns &quot;c&quot;">
-    `isBangla` is `false`, so the dictionary is searched for a chord value of `9` with a non-null `english` field. The entry `{ 0b001001, "c", "চ" }` matches and returns `"c"`.
-  </Step>
-  <Step title="sendChar(&quot;c&quot;) transmits the character">
-    `sendChar()` calls `bleKeyboard.print("c")` over Bluetooth HID and `Serial.print("c")` over USB at 115200 baud — both simultaneously.
-  </Step>
-</Steps>
+Pressing **Dot 6 alone** (`0b100000`) without `SHIFT` cycles the `CapsMode` state machine and broadcasts the state to connected hosts:
 
-## Valid vs. invalid chords
+```cpp
+enum CapsMode { CAPS_OFF, CAPS_ONCE, CAPS_LOCK };
+```
 
-Every chord the firmware processes falls into one of two outcomes:
+| Press Count | State | Emitted Control Line | Behavior |
+|---|---|---|---|
+| 1st Dot 6 | `CAPS_ONCE` | `SYSTEM:CAP_ONCE` | Uppercases the next English letter, then resets to `CAPS_OFF` |
+| 2nd Dot 6 | `CAPS_LOCK` | `SYSTEM:CAP_LOCK` | Uppercases all subsequent English letters |
+| 3rd Dot 6 (or Space after `CAPS_ONCE`) | `CAPS_OFF` | `SYSTEM:CAP_OFF` | Returns to lowercase |
 
-**Valid chord** — the chord value exists in the active language's dictionary:
-- The translated character is sent over Bluetooth HID and USB Serial.
+## Dictionary Structure (`braileDict[]`)
 
-**Invalid chord** — the chord value is not found (or the entry has no mapping for the current language):
-- No character is sent over Bluetooth HID or USB Serial.
-
-<Note>
-  On a 240 MHz ESP32, the entire dictionary lookup — a linear scan of under 60 entries — completes in a few microseconds. The 180 ms window is there for your fingers, not the processor. From a typist's perspective, the response feels instantaneous.
-</Note>
+`braileDict[]` stores `54` `BrailleEntry` mappings (`uint8_t chord; const char* en; const char* bn;`), covering `a–z` and Bharati Braille vowels, consonants, `্` (halant, dot 4), `ং` (anusvara, dots 5+6), `ঁ` (candrabindu, dot 5), plus convenience chords (`0b100110` → `ি`, `0b110010` → `ূ`, `0b100010` → `স`).

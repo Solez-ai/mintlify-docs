@@ -1,50 +1,78 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "BrailleBridge",
-  "theme": "linden",
+  "theme": "mint",
   "colors": {
-    "primary": "#A16207",
-    "light": "#C49A4A",
-    "dark": "#713F12"
+    "primary": "#FF7315",
+    "light": "#FF8C3B",
+    "dark": "#001242"
   },
-  "favicon": "/favicon.svg",
+  "background": {
+    "color": {
+      "light": "#FAF6F0",
+      "dark": "#000B29"
+    }
+  },
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png",
+    "href": "https://solez.vercel.app"
+  },
+  "favicon": "/favicon.png",
+  "appearance": {
+    "default": "light"
+  },
   "navigation": {
     "tabs": [
       {
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Getting Started",
             "pages": [
+              "index",
               "introduction",
               "how-it-works",
               "quickstart"
             ]
           },
           {
-            "group": "Hardware",
+            "group": "Hardware & PCB",
             "pages": [
               "hardware/overview",
+              "hardware/pcb-v2",
               "hardware/gpio-mapping",
               "hardware/enclosure"
             ]
           },
           {
-            "group": "Firmware",
+            "group": "ESP32 Firmware",
             "pages": [
               "firmware/chord-encoding",
-              "firmware/language-switching",
+              "firmware/serial-protocol",
               "firmware/shift-modifier",
-              "firmware/serial-protocol"
+              "firmware/language-switching"
             ]
           },
           {
-            "group": "Teacher Software",
+            "group": "Desktop App (PyQt6)",
             "pages": [
-              "teacher-software/overview",
-              "teacher-software/connecting-devices",
-              "teacher-software/exam-mode",
-              "teacher-software/export"
+              "desktop/overview",
+              "desktop/multi-device-ble",
+              "desktop/teacher-and-logs"
+            ]
+          },
+          {
+            "group": "Android App",
+            "pages": [
+              "android/overview",
+              "android/ble-service"
+            ]
+          },
+          {
+            "group": "Web Platform & Viewers",
+            "pages": [
+              "website/overview"
             ]
           },
           {
@@ -75,17 +103,21 @@
     ]
   },
   "navbar": {
+    "links": [
+      {
+        "label": "Website",
+        "href": "https://solez.vercel.app"
+      }
+    ],
     "primary": {
       "type": "github",
       "href": "https://github.com/Solez-ai/braille.bridge"
     }
   },
-  "appearance": {
-    "default": "light"
-  },
-  "thumbnails": {
-    "fonts": {
-      "family": "Geist"
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Solez-ai/braille.bridge",
+      "website": "https://solez.vercel.app"
     }
   },
   "styling": {

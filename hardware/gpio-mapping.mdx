@@ -1,65 +1,47 @@
 ---
-title: "BrailleBridge ESP32 GPIO Pin Mapping and Wiring Guide"
+title: "GPIO Mapping & Boot-Pin Safety"
 sidebarTitle: "GPIO Mapping"
-description: "Complete GPIO pin assignments for the BrailleBridge ESP32 firmware: all six Braille dot inputs, Space, Shift, and both LED outputs with resistor values."
+description: "ESP32 GPIO assignments for all 8 mechanical switch channels in braile.ino and BB1 Wiring Board v2."
 ---
 
-This page lists every GPIO pin assignment used by the BrailleBridge firmware. Knowing the exact pin numbers matters both during initial assembly — so you connect each switch and LED to the correct pad on the ESP32 Dev Module — and during troubleshooting, when you need to probe individual signals to isolate a fault. If a key feels unresponsive, you can verify continuity between the switch terminal and the GPIO listed here; if an LED is dark, you can confirm the output pin and resistor are intact before touching the firmware.
+All eight mechanical switches connect between an ESP32 GPIO pin and the shared `GND` plane. In `braile/braile.ino`, every channel is initialized with `INPUT_PULLUP` (`HIGH` when idle, `LOW` when pressed).
 
-## GPIO pin assignments
+## Pin Assignment Table
 
-| Function | GPIO | Notes |
-|---|---|---|
-| Dot 1 | 14 | Top-left |
-| Dot 2 | 12 | Middle-left |
-| Dot 3 | 13 | Bottom-left |
-| Dot 4 | 27 | Top-right |
-| Dot 5 | 26 | Middle-right |
-| Dot 6 | 25 | Bottom-right |
-| Space | 33 | Dedicated space key |
-| Shift | 32 | Modifier key |
-| Red LED | 18 | English mode indicator, 220 Ω resistor |
-| Green LED | 19 | Bangla mode indicator, 220 Ω resistor |
+| Channel | Firmware Constant | ESP32 GPIO | Bitmask | `J1` Header Pin | `J2` Socket Pin | Notes |
+|---|---|---|---|---|---|---|
+| **Dot 1** | `DOT_1` | `14` | `0b000001` | `J1/1` (`S`) | `J2/12` | Left column, top |
+| **Dot 2** | `DOT_2` | `12*` | `0b000010` | `J1/3` (`S`) | `J2/13` | **MTDI boot-strapping pin** — no external pull-up |
+| **Dot 3** | `DOT_3` | `13` | `0b000100` | `J1/5` (`S`) | `J2/15` | Left column, bottom |
+| **Dot 4** | `DOT_4` | `27` | `0b001000` | `J1/7` (`S`) | `J2/11` | Right column, top |
+| **Dot 5** | `DOT_5` | `26` | `0b010000` | `J1/9` (`S`) | `J2/10` | Right column, middle |
+| **Dot 6** | `DOT_6` | `25` | `0b100000` | `J1/11` (`S`) | `J2/9` | Right column, bottom / Capital sign |
+| **Space** | `SPACE` | `33` | — | `J1/13` (`S`) | `J2/8` | Inserts `' '` and clears `CAPS_ONCE` |
+| **Shift** | `SHIFT` | `32` | — | `J1/15` (`S`) | `J2/7` | Hold = modifier; Tap (`25–1500 ms`) = Backspace |
 
-## Wiring conventions
+<Warning>
+  **GPIO12 (`DOT_2`) Boot-Strapping Rule:** On the ESP32-WROOM-32, `GPIO12` (`MTDI`) selects internal flash voltage at power-on (`LOW` = 3.3 V normal boot, `HIGH` = 1.8 V boot failure). Never solder an external pull-up resistor to `D2`. Because the Outemu Red switch is normally open and `pinMode(DOT_2, INPUT_PULLUP)` executes *after* boot in `setup()`, `GPIO12` boots reliably every time (just avoid holding Dot 2 down while flipping power on).
+</Warning>
 
-All eight switches share a **common ground bus** on the perfboard. One leg of every switch connects to that ground rail; the other leg connects to its assigned GPIO pin. Because the firmware calls `pinMode(..., INPUT_PULLUP)` for every input, the ESP32's internal pull-up resistors hold each line at `HIGH` when the switch is open. Pressing a switch pulls that GPIO directly to ground, reading `LOW`. This means:
+## Firmware Initialization (`braile/braile.ino`)
 
-- **Unpressed = HIGH**
-- **Pressed = LOW**
+```cpp
+#define DOT_1 14
+#define DOT_2 12
+#define DOT_3 13
+#define DOT_4 27
+#define DOT_5 26
+#define DOT_6 25
+#define SPACE 33
+#define SHIFT 32
 
-You only need **9 wires total** from the perfboard to the ESP32: one shared ground wire and one signal wire per input (8 inputs × 1 signal wire = 8 wires). The two LED anodes connect to GPIO 18 and GPIO 19 through individual 220 Ω resistors, with the LED cathodes returning to the same ground bus.
+const unsigned long DEBOUNCE_MS = 15;
+enum { P_D1, P_D2, P_D3, P_D4, P_D5, P_D6, P_SPACE, P_SHIFT, PIN_COUNT };
+struct PinFilter { uint8_t pin; bool raw; bool stable; unsigned long lastChange; };
 
-## The 6-bit chord encoding
-
-Each Braille dot maps to a single bit position in an unsigned 8-bit integer. Dot 1 occupies bit 0 (the least-significant bit), and dot 6 occupies bit 5. When you press a key, the firmware sets the corresponding bit; dots you do not press leave their bits at zero. After the 180 ms chording window closes, the resulting value is a compact 6-bit number that uniquely identifies the chord and can be compared against the dictionary in constant time.
-
-| Dot | Bit position | Bit weight |
-|---|---|---|
-| Dot 1 | 0 | 1 |
-| Dot 2 | 1 | 2 |
-| Dot 3 | 2 | 4 |
-| Dot 4 | 3 | 8 |
-| Dot 5 | 4 | 16 |
-| Dot 6 | 5 | 32 |
-
-The function that builds this value from the six GPIO readings is reproduced below exactly as it appears in the firmware:
-
-```cpp title="readChord() — reading all 6 dot pins"
-uint8_t readChord() {
-  uint8_t chord = 0;
-  if (digitalRead(DOT_1) == LOW) chord |= (1 << 0);
-  if (digitalRead(DOT_2) == LOW) chord |= (1 << 1);
-  if (digitalRead(DOT_3) == LOW) chord |= (1 << 2);
-  if (digitalRead(DOT_4) == LOW) chord |= (1 << 3);
-  if (digitalRead(DOT_5) == LOW) chord |= (1 << 4);
-  if (digitalRead(DOT_6) == LOW) chord |= (1 << 5);
-  return chord;
-}
+PinFilter filters[PIN_COUNT] = {
+  {DOT_1, false, false, 0}, {DOT_2, false, false, 0}, {DOT_3, false, false, 0},
+  {DOT_4, false, false, 0}, {DOT_5, false, false, 0}, {DOT_6, false, false, 0},
+  {SPACE, false, false, 0}, {SHIFT, false, false, 0}
+};
 ```
-
-Each `if` statement checks whether its GPIO is `LOW` (pressed) and, if so, ORs the corresponding power-of-two bitmask into the accumulator `chord`. The function returns `0` if no dots are held, and a value between `1` and `63` (0b000001 – 0b111111) for any combination of pressed dots.
-
-<Info>
-  Pressing **dots 1 and 4** together produces a chord value of `0b001001` — bit 0 set for dot 1, and bit 3 set for dot 4. In English mode this resolves to the letter **'C'**; in Bangla mode it resolves to the consonant **চ** (cha) under the Bharati Braille standard.
-</Info>

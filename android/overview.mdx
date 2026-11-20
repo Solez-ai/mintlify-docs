@@ -1,0 +1,32 @@
+---
+title: "Android Companion App (Jetpack Compose)"
+sidebarTitle: "Overview"
+description: "Kotlin + Jetpack Compose + Material 3 + Room Android app (`com.aistudio.braillebridge.bbrdg`) with multi-bridge BLE classroom monitoring and Bangla/English TTS."
+---
+
+The BrailleBridge Android app (`braillebridge/`) brings the full multi-bridge Student, Teacher, Logs, and Learn experience to Android phones and tablets (`minSdk 24`, `targetSdk 36`).
+
+## Tech Stack (`app/build.gradle.kts`)
+
+| Component | Configuration |
+|---|---|
+| **Package / App ID** | `com.aistudio.braillebridge.bbrdg` (namespace `com.example`) |
+| **SDK Levels** | `minSdk = 24` (Android 7.0) · `compileSdk = 36` · `targetSdk = 36` |
+| **UI** | Jetpack Compose (BOM `2024.09.00`) + Material 3 |
+| **Architecture** | Single-activity MVVM (`MainActivity` + `MainViewModel`) with `StateFlow` / `SharedFlow` |
+| **Persistence** | Room `2.7.0` (`AppDatabase`: `StudentEntity`, `ExportEntity`) + `SettingsStore` (`SharedPreferences` `"bb_settings"`) |
+| **Toolchain** | AGP `9.1.1` · Kotlin `2.2.10` · KSP `2.3.7` · Coroutines `1.10.2` · OkHttp `4.12.0` |
+
+## Navigation & Screens (`MainActivity.kt`)
+
+A bottom Material 3 `NavigationBar` switches cleanly between 4 primary screens:
+
+1. **Student (`StudentScreen`)**: Interactive 6-dot touch pad, live text output, language/caps/shift status, TTS playback, and direct BLE connection.
+2. **Teacher (`TeacherScreen`)**: Multi-student classroom grid fed concurrently by `BleProxyService`, with `AddStudentDialog`, `BleScanDialog`, `ExpandModal`, `PreviewModal`, and `SendModal`.
+3. **Logs (`ExportsScreen` → `ReviewScreen`)**: Archived classroom sessions stored in Room `exports` table, with `AutoFormatter` structured reading and export sharing.
+4. **Learn (`LearnScreen`)**: Interactive Braille learning & `LearnerEngine` drills.
+
+## Bilingual Audio (`TTSManager` & `BBTranslate`)
+
+- **`TTSManager`**: Uses Android `TextToSpeech` for `en-US` and `bn-BD`. If an offline Bangla voice pack is missing on the device, `TTSManager` falls back seamlessly to `MediaPlayer` streaming `https://translate.google.com/translate_tts?ie=UTF-8&tl=bn&client=tw-ob&q=...`.
+- **`BBTranslate`**: Calls `translate.googleapis.com/translate_a/single?client=gtx` via OkHttp with a v2 fallback and an in-memory `ConcurrentHashMap` cache.

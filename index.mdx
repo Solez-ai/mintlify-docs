@@ -1,42 +1,65 @@
 ---
-title: "BrailleBridge: Bilingual Braille Writing for the Classroom"
+title: "BrailleBridge: Bilingual Braille Writing & Classroom Ecosystem"
 sidebarTitle: "Home"
-description: "BrailleBridge lets blind students write with Braille chords while teachers receive real-time, readable digital text — no sighted writer needed."
+description: "Bluetooth-first, multi-device Braille writing system — custom KiCad PCB, ESP32 BLE HID + NUS firmware, PyQt6 desktop console, Jetpack Compose Android app, and interactive 3D web platform."
 ---
 
-BrailleBridge is a low-cost, bilingual digital Braille writing and classroom examination system built for blind and visually impaired students. You press familiar six-dot Braille chords on a physical mechanical keyboard, and an ESP32 microcontroller instantly translates each chord into readable English or Bangla text — delivering the result simultaneously to your own device over Bluetooth and to your teacher's browser-based console over USB Serial. No sighted writer, no privacy trade-offs, no expensive equipment.
+<Frame caption="BrailleBridge BB1 hardware unit with 6-dot Outemu Red mechanical switches, Space, and Shift">
+  <img src="/images/hero-device.png" alt="BrailleBridge BB1 Hardware Device" />
+</Frame>
+
+**BrailleBridge (`b°bridge`)** is an open-source, commercial-ready bilingual Braille writing and multi-student classroom ecosystem built by **Solez AI**. Blind and visually impaired students type familiar six-dot Braille chords on a tactile mechanical keyboard (`~$12` BOM), while an ESP32 microcontroller decodes each chord on release and streams translated English or Bangla text over **Bluetooth Low Energy (BLE HID + Nordic UART Service)** and **USB Serial (`115200` baud)** simultaneously.
 
 <CardGroup cols={2}>
-  <Card title="Introduction" icon="book-open" href="/introduction">
-    Learn what BrailleBridge is, who it's built for, and the accessibility gap it closes in classrooms and examination halls.
+  <Card title="Architecture & How It Works" icon="gears" href="/how-it-works">
+    Decode-on-release chording, dual BLE HID + NUS GATT channels, USB Serial, and multi-bridge classroom routing.
   </Card>
-  <Card title="How It Works" icon="gears" href="/how-it-works">
-    Follow a Braille chord from keypress to readable text: GPIO reading, 6-bit bitmask encoding, dictionary lookup, and dual output.
+  <Card title="BB1 Wiring Board v2 (PCB)" icon="microchip" href="/hardware/pcb-v2">
+    Custom 2-layer KiCad 10 PCB (66 × 41 × 1.2 mm), 38-pin ESP32 DevKit sockets, 1N5819 power chain, and 0-violation DRC.
   </Card>
-  <Card title="Quickstart" icon="bolt" href="/quickstart">
-    Go from unboxing to your first typed character in four steps: power on, pair via Bluetooth, connect Teacher Software, and type.
+  <Card title="PyQt6 Desktop Console" icon="desktop" href="/desktop/overview">
+    Multi-device BLE + USB Serial classroom console with Student, Teacher, Smart-Formatted Logs, and Learn modes.
   </Card>
-  <Card title="Teacher Software" icon="display" href="/teacher-software/overview">
-    Explore the browser-based Teacher Software — real-time feeds, exam mode, timestamped exports, and multi-student monitoring.
+  <Card title="Android Companion App" icon="mobile" href="/android/overview">
+    Jetpack Compose + Material 3 app with foreground `BleProxyService` supporting simultaneous multi-bridge connections.
   </Card>
 </CardGroup>
 
-## The three-step flow
+## System Architecture
 
-Every character you type passes through the same simple pipeline — from your fingertips to your teacher's screen.
+```mermaid
+flowchart LR
+    HW["BB1 Hardware<br/>8x Outemu Red + ESP32 DevKit<br/>4xAA + Slide Switch + 1N5819"]
+    HID["BLE HID Keyboard<br/>Student Phone / Tablet / PC<br/>(ASCII + Screen Reader)"]
+    NUS["BLE Nordic UART (NUS)<br/>Multi-Device UTF-8 Stream<br/>(English + Bangla + Control)"]
+    USB["USB Serial (115200 baud)<br/>Wired Classroom Backup"]
+    DT["PyQt6 Desktop App<br/>bleak + pyserial + SAPI TTS"]
+    AND["Android Compose App<br/>BleProxyService + Room DB"]
+    WEB["Web Platform & 3D Viewer<br/>Web Bluetooth + Three.js GLB"]
+
+    HW --> HID
+    HW --> NUS
+    HW --> USB
+    NUS --> DT
+    NUS --> AND
+    NUS --> WEB
+    USB --> DT
+    USB --> WEB
+```
+
+## End-to-End Pipeline
 
 <Steps>
-  <Step title="Student types a chord">
-    You press one or more of the six dot keys simultaneously. The device collects all keys pressed within a 180 ms window so that fingers landing milliseconds apart are always read as a single, intended chord.
+  <Step title="Student presses a Braille chord">
+    Six dot switches (`GPIO 14, 12*, 13, 27, 26, 25`), Space (`GPIO 33`), and Shift (`GPIO 32`) are polled through a `15 ms` debounce filter using ESP32 internal `INPUT_PULLUP` resistors.
   </Step>
-  <Step title="ESP32 translates the chord">
-    The firmware encodes the pressed dots into a 6-bit bitmask, checks whether Shift is active, looks up the result in the active language dictionary (English or Bangla), and emits the translated character.
+  <Step title="Firmware decodes on key release">
+    Instead of a fixed timer, `braile.ino` accumulates the 6-bit dot mask while keys are held and commits the chord as soon as all dot keys are released (with a `5,000 ms` stuck-key guard).
   </Step>
-  <Step title="Teacher sees readable text">
-    The translated character is sent over two independent channels at once: Bluetooth HID to your own phone, tablet, or PC (where a screen reader can read it aloud), and USB Serial to the Teacher Software running in the teacher's browser.
+  <Step title="Dual Bluetooth + USB broadcast">
+    ASCII characters fire as standard **BLE HID** keystrokes (read aloud by TalkBack/VoiceOver/Narrator) while both ASCII and multi-byte Bangla UTF-8 stream over **BLE NUS** (`6E400001-...`) and **USB Serial** at `115200` baud.
+  </Step>
+  <Step title="Multi-bridge classroom ingestion">
+    Teachers connect **multiple BrailleBridge units concurrently** over Bluetooth (desktop `bleak` / WinRT or Android `BleProxyService`) or USB Serial — monitoring live feeds, translating, and exporting formatted `.txt` / `.log` transcripts.
   </Step>
 </Steps>
-
-<Note>
-  BrailleBridge costs under **$15** per device to build from standard, locally replaceable parts. It supports both **English** (Grade 1 Braille, A–Z, numbers, and punctuation) and **Bangla** (following the Bharati Braille standard), switchable at any time by holding dots 4+5+6 for 500 ms.
-</Note>

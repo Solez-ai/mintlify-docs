@@ -1,0 +1,25 @@
+---
+title: "Classroom Teacher Console, Smart Logs & TTS"
+sidebarTitle: "Teacher Console & Logs"
+description: "Managing multiple students, live Feed cards, SmartFormatter structured logs, Google Translate, and Windows SAPI Text-to-Speech."
+---
+
+## Teacher View (Multi-Student Grid)
+
+In **Teacher** mode (`main.py`), every student in `roster.json` is rendered as a live card inside a responsive 2-column grid:
+
+- **Add Student**: Choose **Bluetooth (BLE)**, **USB Serial**, or **Assign Later**, bind a device address/port, and start streaming immediately.
+- **Live Card Controls**: View live translated text alongside a `MiniBrailleCell` showing the student's current chord, **Expand** into a large-type modal (`_open_expand_student_dialog`) for readability from across a desk, **Test** with simulated chord input, **Export**, **Clear**, or **Remove** the student.
+
+## Logs View & `SmartFormatter`
+
+The **Logs** view replaces the legacy Exam View and parses raw student transcripts through **`SmartFormatter`** (`protocol.py`) into structured visual blocks:
+
+- `title`, `heading`, `question`, `answer`, `math`, `callout`, `bullet`, `numbered`, and `para`
+- Toggle **Plain Text** view for raw character inspection
+- Translate any student's log via Google Translate (`translate.googleapis.com/translate_a/single?client=gtx`)
+- Export formatted transcripts to `{student}_formatted_log.txt` (or auto-saved `{name}_{YYYY-MM-DD_HH-MM-SS}.log` on disconnect)
+
+## Speech Synthesis (`SpeechEngine`)
+
+In `protocol.py`, `SpeechEngine.speak()` announces characters, symbols (`SYMBOL_SPEECH`), capital letters (`"capital A"`), and full words on Space in Learn Freeplay mode using Windows SAPI (`System.Speech.Synthesis.SpeechSynthesizer` at `$s.Rate = 1` via asynchronous PowerShell on `win32`).

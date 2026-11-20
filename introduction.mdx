@@ -1,81 +1,37 @@
 ---
-title: "BrailleBridge: Accessible Exam Writing for Blind Students"
+title: "Introduction to BrailleBridge"
 sidebarTitle: "Introduction"
-description: "Learn what BrailleBridge is, who it's built for, and how it solves the classroom accessibility gap for blind and visually impaired students."
+description: "Why BrailleBridge exists, how it scales from one student device to multi-bridge classrooms, and what ships in the current ecosystem."
 ---
 
-BrailleBridge is a low-cost, bilingual digital Braille writing and classroom examination system. Its mission is straightforward: every blind student should be able to write their own exam answers — independently, privately, and in their own language — while every teacher receives readable digital text in real time, without needing to know a single Braille cell. By placing a six-dot mechanical keyboard in the student's hands and a browser-based console on the teacher's screen, BrailleBridge removes the sighted writer from the equation entirely.
+BrailleBridge removes the sighted human scribe from blind students' classrooms and examinations. Instead of dictating answers aloud to a writer, a student types silently on a compact mechanical six-dot Braille keyboard, receives audio confirmation through their own screen reader, and streams clean English or Bangla text straight to the teacher's console over Bluetooth or USB.
 
-## Who is BrailleBridge for?
+## What Changed in the Current Generation
 
-BrailleBridge is designed for two groups of people whose needs have historically been in tension in the classroom.
+BrailleBridge evolved from a single breadboard/perfboard USB prototype into a complete multi-device hardware and software platform:
 
-**Blind and visually impaired students** who already know Braille and want to write at their own pace, with full privacy, without dictating every word to another person. BrailleBridge gives you a familiar six-dot chord keyboard — the same dot layout you know — and lets you compose answers silently. Your output goes directly to your own device over Bluetooth, where your screen reader can confirm each character aloud in your ear.
+| Subsystem | Legacy Prototype | Current Production Architecture |
+|---|---|---|
+| **Primary Transport** | USB Serial (`115200` baud) + single-device BLE HID | **Bluetooth-first**: BLE HID Keyboard + concurrent **BLE Nordic UART Service (NUS)** + USB Serial fallback |
+| **Multi-Device Scale** | 1 student per browser tab (Web Serial) | **Multi-bridge pool** in both PyQt6 Desktop (`RelayManager` + `BleManager`) and Android (`BleProxyService` `ConcurrentHashMap`) |
+| **Hardware Wiring** | Loose breadboard / perfboard wires, USB-only | **BB1 Wiring Board v2** — custom 2-layer KiCad 10 PCB (`66 × 41 × 1.2 mm`), `4×AA` battery power via slide switch & `1N5819`, `38-pin` ESP32 female sockets |
+| **Chording Engine** | Fixed `180 ms` commit window | **Decode-on-release** state machine (`DEBOUNCE_MS = 15`, `CHORD_HOLD_MAX_MS = 5000`) + Shift tap-for-backspace + Dot 6 Capital lock |
+| **Teacher Software** | Static HTML Web Serial prototype | **Native PyQt6 Desktop Suite** + **Android Jetpack Compose App** with Smart Formatter, Google Translate, TTS, and persistent rosters |
+| **Web Platform** | Basic demo page | Virtual 6-dot pad, Web Bluetooth + Web Serial bridge, **Three.js `.glb` 3D PCB viewer**, and **2D KiCad SVG layer inspector** |
 
-**Teachers and exam invigilators** who are sighted and do not read Braille. You do not need to learn Braille to use BrailleBridge. Every character the student types appears instantly in plain, readable English or Bangla in your browser — no transcription, no delay, no specialist knowledge required. You can monitor the whole class at once, expand any student's view, and export a timestamped record at the end of the session.
-
-## The problem it solves
-
-The most common workaround in classrooms today — dictating answers to a sighted writer — creates a cascade of problems for the student. BrailleBridge is designed to address each one directly.
+## Who Uses BrailleBridge?
 
 <CardGroup cols={2}>
-  <Card title="Problem: Loss of privacy" icon="eye-slash" href="/introduction#the-problem-it-solves">
-    Answers must be spoken aloud for a writer to record. Nothing stays private in an examination setting.
+  <Card title="Blind & Visually Impaired Students" icon="universal-access">
+    Type privately in Grade 1 English Braille or Bharati Bangla Braille using familiar mechanical Outemu Red switches, with instant audio feedback via screen readers or built-in TTS.
   </Card>
-  <Card title="Solution: Silent chord input" icon="lock" href="/introduction#the-problem-it-solves">
-    You type Braille chords silently. Only the translated text reaches the teacher — never the raw composition process.
+  <Card title="Teachers & Exam Invigilators" icon="chalkboard-user">
+    Monitor an entire classroom of Bluetooth-connected BrailleBridge devices simultaneously on Windows/macOS/Linux Desktop or Android — zero Braille reading skill required.
   </Card>
-  <Card title="Problem: Loss of independence" icon="person-chalkboard" href="/introduction#the-problem-it-solves">
-    Someone else controls the final written record and decides how your words are interpreted or spelled.
+  <Card title="Schools & Makers" icon="screwdriver-wrench">
+    Order the verified 2-layer `BB1 Wiring Board v2` from JLCPCB using ready-to-manufacture Gerbers, snap in 8 Outemu switches and a 38-pin ESP32 DevKit, and flash via Arduino IDE.
   </Card>
-  <Card title="Solution: Direct authorship" icon="pen-nib" href="/introduction#the-problem-it-solves">
-    You produce the output yourself. The device translates exactly what you press — nothing is filtered, interpreted, or delayed by a third party.
-  </Card>
-  <Card title="Problem: Teacher can't read Braille" icon="file-circle-xmark" href="/introduction#the-problem-it-solves">
-    Embossed Braille is unreadable to most sighted teachers, so student work goes unassessed or unverified in real time.
-  </Card>
-  <Card title="Solution: Instant readable text" icon="display" href="/introduction#the-problem-it-solves">
-    The Teacher Software displays every character as plain English or Bangla text the moment you type it — no Braille knowledge needed.
-  </Card>
-  <Card title="Problem: High cost of existing tools" icon="circle-dollar-to-slot" href="/introduction#the-problem-it-solves">
-    Mechanical braillers cost $600–$1,000+. Commercial digital Braille devices cost $1,000–$5,000+. Many schools cannot afford them.
-  </Card>
-  <Card title="Solution: Under $15 per device" icon="tags" href="/introduction#the-problem-it-solves">
-    BrailleBridge is built from a ~$5 ESP32, ~$3 of Outemu Red switches, a 3D-printed enclosure, and a handful of standard components — totalling roughly $12.
+  <Card title="Developers & Researchers" icon="code">
+    Integrate directly with the open newline-delimited UTF-8 **Nordic UART Service (`6E400001-...`)** or `115200` baud Serial protocol from any BLE or serial host.
   </Card>
 </CardGroup>
-
-## System components
-
-BrailleBridge consists of two parts that work together.
-
-**The hardware device** is a compact, 3D-printed Braille keyboard containing six mechanical dot keys (Outemu Red switches), a dedicated Space key, a Shift key, two status LEDs (Red for English, Green for Bangla), and an ESP32 Dev Module. The ESP32 runs the firmware that reads chords, translates them, and broadcasts the result over both Bluetooth HID and USB Serial simultaneously. The enclosure is designed in Fusion 360 and printed on a standard FDM printer using PLA filament.
-
-**The Teacher Software** is a zero-installation, browser-based console that runs in Chrome or Edge. It connects directly to one or more BrailleBridge devices over USB Serial using the Web Serial API. Teachers can add multiple students to a roster, monitor all of them side by side in Exam Mode, expand any individual student's feed to a large readable view, and export a full timestamped transcript at the end of a session.
-
-## Key capabilities
-
-<CardGroup cols={3}>
-  <Card title="Bilingual: English + Bangla" icon="language" href="/how-it-works#language-switching">
-    Supports Grade 1 English Braille and the full Bharati Braille standard for Bangla — vowels, consonants by varga, vowel signs, halant, anusvara, visarga, and candrabindu — on the same device with the same keys.
-  </Card>
-  <Card title="Bluetooth HID keyboard" icon="bluetooth" href="/how-it-works#dual-output-channels">
-    Pairs with any phone, tablet, or PC as a standard Bluetooth keyboard. No proprietary receiver, no drivers, no additional software needed.
-  </Card>
-  <Card title="Web Serial teacher console" icon="globe" href="/teacher-software/overview">
-    The Teacher Software uses the Web Serial API to read directly from the device in Chrome or Edge. No installation, no database, no server required.
-  </Card>
-  <Card title="Under $15 total cost" icon="coins" href="/hardware/overview">
-    The entire bill of materials — ESP32, switches, keycaps, LEDs, perfboard, PLA filament, and hardware — comes to approximately $12, making classroom-scale deployment realistic.
-  </Card>
-  <Card title="3D-printed enclosure" icon="cube" href="/hardware/overview">
-    The two-shell enclosure (top and bottom) is modelled in Fusion 360 and printed on any FDM printer. MX-compatible cutouts let the eight Outemu switches snap in without glue or additional hardware.
-  </Card>
-  <Card title="Classroom exam mode" icon="graduation-cap" href="/teacher-software/overview">
-    The Teacher Software's Exam Mode places every connected student in a monitoring grid on a single screen, with per-character timestamps and one-click export to `.txt` for each student.
-  </Card>
-</CardGroup>
-
-<Tip>
-  Ready to set up your first device? The [Quickstart guide](/quickstart) walks you through powering on, pairing via Bluetooth, connecting the Teacher Software, and typing your first character in four steps.
-</Tip>

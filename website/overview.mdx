@@ -1,0 +1,34 @@
+---
+title: "Website, Live Bridge & Interactive 3D/2D PCB Viewer"
+sidebarTitle: "Website & 3D Viewer"
+description: "Explore the solez.vercel.app web platform: WebGL2 hero shader, Web Bluetooth + Web Serial virtual pad, Three.js .glb 3D PCB inspector, and 2D KiCad SVG layer viewer."
+---
+
+The BrailleBridge web platform (`website/`, hosted at [solez.vercel.app](https://solez.vercel.app)) combines product storytelling, live hardware connectivity in the browser, and interactive hardware engineering inspection using **HTML5 / CSS3 / JavaScript**, **WebGL2** (`gradient-ascii.js`), and **Three.js `0.170.0`** (`pcb-viewer.js`).
+
+## Interactive Virtual Braille Pad & Live Hardware Bridge
+
+In `website/script.js` (`#demo` in `index.html`), visitors and students can test BrailleBridge directly in the browser:
+
+- **Virtual 6-Dot Pad**: Click dots or press keys `1–6`, `Enter`, `Space`, `Backspace`, `Shift`, and `Esc` with full English & Bangla Bharati Braille parity, Dot 6 Capital Sign (`OFF` / `ONCE` / `LOCK`), `Auto-type` (`650 ms`), `Copy text`, and Web Speech API (`speechSynthesis`, `en-US` / `bn-BD`).
+- **Web Bluetooth (`navigator.bluetooth`)**: Filters `namePrefix: 'BrailleBridge'` and NUS `6e400001-b5a3-f393-e0a9-e50e24dcca9e`, streaming live hardware chords directly into the web pad and sending `LANG:en` / `LANG:bn` over RX.
+- **Web Serial (`navigator.serial`)**: Connects over USB at `115200` baud with the same `BOOT_PREFIXES` and `SYSTEM:`/`LANG:` control parser.
+
+## Interactive 3D PCB Viewer (`pcb-viewer.js`)
+
+`initPcb3dViewer()` mounts a `THREE.WebGLRenderer` (ACESFilmic tone mapping, `PCFSoftShadowMap`, `RoomEnvironment` PMREM studio lighting) with `OrbitControls` and `GLTFLoader` loading **`assets/pcb/bb1_wiring_board_v2.glb`** (`66.0 × 41.0 × 1.2 mm`):
+
+- **Camera Controls**: `Iso`, `Top (Z)`, `Bottom (-Z)`, `Reset`, `Orbit` auto-rotate, and Zoom In/Out.
+- **Layer Visibility Toggles**: Independently toggle 3D component models (`#pcb3dVisModels`), green solder mask (`#pcb3dVisMask`), silkscreen (`#pcb3dVisSilk`), and floor shadow (`#pcb3dVisShadow`).
+- **Quick-Inspect & Raycasting**: Jump straight to `board`, `esp32` (`J2/J4`, `20.300 mm` row spacing), `switches` (`J1` 1×16), `power` (`J3` 1×4), `diode` (`D1` `1N5819`), or `mounts` (`H1/H2` M2 holes) — or click any mesh directly to highlight it in Bridge Orange (`#FF7315`) and read its exact millimeter board coordinates.
+
+## Interactive 2D KiCad PCB Layer Inspector
+
+`initPcb2dViewer()` provides pan and `Ctrl+Wheel` zoom with live `(X mm, Y mm)` coordinate readout across four exported KiCad SVG layers in `website/assets/pcb/`:
+
+| Layer Option | SVG Asset |
+|---|---|
+| **All Layers** | `pcb_2d_kicad.svg` |
+| **F.Cu (Top Copper)** | `layer_f_cu.svg` |
+| **B.Cu (Bottom Copper)** | `layer_b_cu.svg` |
+| **F.Silkscreen + Edge** | `layer_silk.svg` |

@@ -1,63 +1,38 @@
 ---
-title: "BrailleBridge Hardware: Components and Bill of Materials"
+title: "Hardware Overview & Bill of Materials"
 sidebarTitle: "Overview"
-description: "Explore the BrailleBridge hardware components: ESP32 microcontroller, Outemu mechanical switches, LED indicators, and the complete bill of materials."
+description: "Complete hardware architecture of BrailleBridge BB1: 38-pin ESP32 DevKit, 8 Outemu Red switches, 4xAA + 1N5819 power chain, and BB1 Wiring Board v2 PCB."
 ---
 
-BrailleBridge is built entirely from standard, off-the-shelf components that you can source locally in most countries for roughly **$12 per device**. Every part was chosen for low cost, long service life, and easy replacement — so that a school or maker can repair or reproduce the device without specialist tools or proprietary parts. This page introduces each component, explains why it was chosen, and provides the full bill of materials so you can order or verify your own build.
+<Frame caption="BrailleBridge BB1 top-down mechanical layout with 6 dot keys, Space, and Shift">
+  <img src="/images/device-top-refined.png" alt="BrailleBridge BB1 Top Layout" />
+</Frame>
 
-## Components at a glance
+BrailleBridge BB1 is built from off-the-shelf, locally replaceable parts paired with a dedicated 2-layer wiring hub PCB (**BB1 Wiring Board v2**) that eliminates breadboard jumper clutter and provides a solid dual-layer ground plane.
 
-| Component | Qty | Approx. cost (USD) |
-|---|---|---|
-| ESP32 Dev Module | 1 | $5.00 |
-| Outemu Red switch | 8 | $3.00 |
-| Keycaps (3D-printed) | 8 | $1.00 |
-| LED (3 mm) + 220 Ω resistor | 2 + 2 | $0.30 |
-| Perfboard | 1 | $0.80 |
-| PLA filament (enclosure, ~30 g) | — | $1.20 |
-| M3 screws, wire, solder | — | $0.70 |
-| **Total** | | **~$12.00** |
+## Bill of Materials (BB1 Device + Wiring Board v2)
+
+| Component | Qty | Package / Spec | Purpose |
+|---|---|---|---|
+| **ESP32 DevKit (38-pin)** | 1 | Dual 19-pin headers (`20.3 mm` row spacing), Micro-USB | 240 MHz dual-core MCU + BLE HID & NUS radio |
+| **Outemu Red Switches** | 8 | Linear MX-compatible, 50M cycles | 6 Braille dots (`D1–D6`), `SPACE`, `SHIFT` |
+| **BB1 Wiring Board v2** | 1 | `66.0 × 41.0 × 1.2 mm`, 2-layer FR-4, HASL lead-free | Plug-in ESP32 sockets + vertical Dupont switch/power hub |
+| **`1N5819` Schottky Diode (`D1`)** | 1 | DO-41 (`SOD81`, `10.16 mm` horizontal pitch), `40 V 1 A` | Reverse-polarity / back-feed protection (`SW_BACK -> VIN`) |
+| **1×19 Female Sockets (`J2`, `J4`)** | 2 | `2.54 mm` pitch vertical female pin sockets | Plug-in socket for 38-pin ESP32 DevKit |
+| **1×16 Male Pin Header (`J1`)** | 1 | `2.54 mm` vertical male header | 8 × `(SIG, GND)` switch pairs via F-to-F Dupont wires |
+| **1×04 Male Pin Header (`J3`)** | 1 | `2.54 mm` vertical male header | `BAT-`, `BAT+`, `BAT+ > SW`, `SW BACK` power harness |
+| **4×AA Battery Holder + Slide Switch** | 1 | Off-board power harness | Portable `~6 V` supply regulated by ESP32 onboard AMS1117 |
+| **3D-Printed Keycaps & Enclosure** | 1 set | FDM PLA + M2/M3 fasteners | Ergonomic Braille cell spacing & wrist rest |
 
 <Note>
-  All components in this table are locally available and replaceable for a few dollars each. If a switch fails in the field, you can swap in any MX-style replacement without modifying the enclosure or firmware.
+  **No external resistors, capacitors, or LEDs** are placed on the BB1 Wiring Board v2. All 8 switch channels rely exclusively on the ESP32's internal `INPUT_PULLUP` resistors enabled in `setup()`, keeping `GPIO12` (`D2`, boot-strapping pin) safe at power-on.
 </Note>
 
-## ESP32 microcontroller
+## Power Architecture
 
-The ESP32 Dev Module is the brain of BrailleBridge. At roughly **$5**, it packs a 240 MHz dual-core processor, built-in Bluetooth Low Energy (BLE), and a USB-UART bridge onto a single 38-pin development board. Because BLE is built in, you do not need a proprietary wireless dongle or receiver — the student's phone, tablet, or laptop pairs directly with the device as a standard Bluetooth HID keyboard. The USB-UART bridge simultaneously streams the same translated characters to the teacher's computer over a serial connection, giving you two independent output channels from one chip.
+The `4×AA` battery pack feeds `J3` (`Pin 3: BAT+`), loops through an external panel-mounted slide switch (`J3 Pin 2: BAT+ > SW` → `J3 Pin 1: SW BACK`), and passes through `D1` (`1N5819` Schottky diode, cathode band toward `VIN`) onto `J2 Pin 19` (`V5` / `VIN`). Battery negative (`J3 Pin 4: BAT-`) ties directly into the dual-layer `GND` copper pour.
 
-<Tip>
-  The ESP32 firmware is written in C++ on the **Arduino framework**, which means you can edit, compile, and flash it using the free Arduino IDE — no proprietary toolchain required. Thousands of community libraries, including the `BleKeyboard` library used here, are available through the Arduino Library Manager.
-</Tip>
-
-## Mechanical switches
-
-BrailleBridge uses **Outemu Red** linear mechanical switches for all eight keys (six Braille dot keys, Space, and Shift). Outemu Reds are MX-compatible, meaning they fit the same PCB footprints and keycap stems as Cherry MX switches at a fraction of the price. Their linear actuation provides consistent, smooth travel with no tactile bump to interrupt a chord — important because you are pressing several keys at once and need each to register without physical resistance fighting your other fingers.
-
-The switches are rated for approximately **50 million press cycles**, which equates to years of intensive daily classroom use before a replacement is needed. All eight switches share a common ground bus on the perfboard, and the ESP32's internal `INPUT_PULLUP` resistors mean an unpressed switch reads `HIGH` and a pressed switch reads `LOW` — no external pull-up resistors are needed for the input lines.
-
-## LED indicators
-
-Two 3 mm LEDs — Red on GPIO 18 and Green on GPIO 19, each with a 220 Ω current-limiting resistor — give you instant visual confirmation of the device state without looking at any screen.
-
-| State | Red LED | Green LED |
-|---|---|---|
-| English mode | ON | OFF |
-| Bangla mode | OFF | ON |
-| Valid character (100 ms flash) | ON | ON |
-| Invalid chord (blinks 3×) | blinks | blinks |
-
-When you switch languages by holding dots 4, 5, and 6 for 500 ms, the LEDs update immediately to reflect the new active language. When you type a recognised chord, both LEDs flash together for 100 ms to confirm the character was accepted. When you press an unrecognised combination, both LEDs blink three times in quick succession so you know to try again — without any audio that might disturb an exam hall.
-
-## Key layout
-
-The physical key layout mirrors the standard six-dot Braille cell. The **left column** holds dot keys 1, 2, and 3 from top to bottom; the **right column** holds dot keys 4, 5, and 6 from top to bottom. This matches the mental model you already have if you know Braille, so no relearning is required.
-
+```text
+4xAA (+) ─▶ [J3/3 BAT+] ==copper== [J3/2 BAT+ > SW] ─▶ Slide Switch ─▶ [J3/1 SW BACK] ─▶ D1 (Anode ──▶|── Cathode) ─▶ VIN ─▶ [J2/19 ESP32 V5]
+4xAA (-) ─▶ [J3/4 BAT-] ─▶ Dual-layer GND Pour ─▶ [J2/14 & J4/1 ESP32 GND] + [8× J1 Switch GND]
 ```
-Dot 1   Dot 4
-Dot 2   Dot 5
-Dot 3   Dot 6
-```
-
-The **Space** key sits at the far left outer edge of the device, and the **Shift** key sits at the far right outer edge. Holding Shift while pressing a chord activates the shift layer — uppercase letters in English mode, vowel signs (কার/matra) in Bangla mode, and numbers or math symbols in either mode. Both the Space and Shift keys have the same Outemu Red switch underneath, so the feel is consistent across all eight keys.

@@ -1,94 +1,94 @@
 ---
-title: "BrailleBridge USB Serial Protocol: Complete Reference"
-sidebarTitle: "Serial Protocol"
-description: "Complete BrailleBridge USB Serial reference: baud rate, message types (LANG:en, LANG:bn, and characters), Web Serial API setup, and custom integrations."
+title: "BLE GATT (HID + NUS) & USB Serial Protocol"
+sidebarTitle: "BLE & Serial Protocol"
+description: "Complete transport specification for BrailleBridge: BLE HID Keyboard, Nordic UART Service (NUS) UUIDs, 115200 baud USB Serial, and bidirectional control lines."
 ---
 
-BrailleBridge sends every translated character and every system event over USB Serial at 115200 baud — simultaneously with the Bluetooth HID output. The Teacher Software reads this stream through the Web Serial API running in a browser tab, but any application that can open a serial port at the right settings will work. This page covers the full connection parameters, every message type the device emits, and how to consume the stream in JavaScript or any other language.
+BrailleBridge uses a custom `BBKeyboard` stack (`braile/BBKeyboard.h` and `braile/BBKeyboard.cpp`, built on `ESP32_BLE_Keyboard` + ESP32 Arduino BLE) that exposes **two concurrent BLE services** alongside **USB Serial (`115200` baud)**.
 
-## Connection parameters
-
-Open the serial port with exactly these settings — any mismatch will produce garbled or missing output:
+## Connection & GATT Parameters
 
 | Parameter | Value |
 |---|---|
-| Baud rate | 115,200 |
-| Data bits | 8 |
-| Stop bits | 1 |
-| Parity | None |
-| BLE device name | BrailleBridge |
+| **BLE Advertised Name** | `BrailleBridge` (max 15 chars) |
+| **BLE MTU** | `247` bytes (`BLEDevice::setMTU(247)`) |
+| **BLE Security** | `ESP_LE_AUTH_REQ_SC_MITM_BOND` |
+| **HID PnP ID** | `vid = 0x05ac`, `pid = 0x820a`, `version = 0x0210` |
+| **NUS Service UUID** | `6E400001-B5A3-F393-E0A9-E50E24DCCA9E` |
+| **NUS TX UUID (ESP32 → Host)** | `6E400002-B5A3-F393-E0A9-E50E24DCCA9E` (`PROPERTY_NOTIFY` + `BLE2902` CCCD) |
+| **NUS RX UUID (Host → ESP32)** | `6E400003-B5A3-F393-E0A9-E50E24DCCA9E` (`PROPERTY_WRITE \| PROPERTY_WRITE_NR`) |
+| **USB Serial** | `115200` baud, 8N1, UTF-8 |
 
-The BLE device name (`"BrailleBridge"`) is set in the firmware via `BleKeyboard("BrailleBridge", "StudentProject", 100)` and is what you will see in your Bluetooth device list when pairing the student's device. USB Serial and Bluetooth HID operate completely independently — you can use one, both, or neither at any given moment.
+## Concurrency & Thread-Safe BLE Event Queue
 
-## Message types
+BLE callbacks run on the NimBLE/Bluedroid task, while chord scanning runs in Arduino `loop()`. `BBKeyboard.cpp` queues `NUS_EVT_CONNECT` (`1`), `NUS_EVT_DISCONNECT` (`2`), and `NUS_EVT_RX` (`3`) events into a `portMUX_TYPE`-guarded ring buffer (`_nusEvents[8]`) and drains them safely in `loop()` via `bleKeyboard.processEvents()`.
 
-Every message from BrailleBridge is a single newline-terminated UTF-8 string. The device sends messages only from device to host — there is no command channel from host to device.
+`streamText()` appends `'\n'` inside the same BLE notification chunk as the payload (split up to `mtu - 3` bytes) so desktop and Android clients never receive split newline frames.
 
-| Message | Direction | Meaning |
-|---|---|---|
-| `LANG:en` | Device → Host | Active language switched to English |
-| `LANG:bn` | Device → Host | Active language switched to Bangla |
-| `<char>` | Device → Host | A single translated Unicode character (e.g. `a`, `অ`, `×`) |
+## Protocol Messages
 
-The Teacher Software uses `LANG:en` and `LANG:bn` to update the language badge shown beside each student's name in real time. Translated characters arrive as plain UTF-8 and are appended directly to the student's live answer buffer.
+### Outgoing (`Device → Host` via BLE NUS & USB Serial)
 
-## Reading the serial stream
+| Message | Meaning |
+|---|---|
+| `SYSTEM: BrailleBridge Connected. Waiting for BLE...` | Printed on USB Serial at boot |
+| `LANG:en` | Active language switched to English |
+| `LANG:bn` | Active language switched to Bangla |
+| `SYSTEM:CAP_ONCE` | Dot 6 Capital Sign active for next character |
+| `SYSTEM:CAP_LOCK` | Dot 6 Capital Lock active |
+| `SYSTEM:CAP_OFF` | Capital state cleared |
+| `SYSTEM:BKSP` | Shift-tap Backspace triggered (also sends BLE HID `0xB2`) |
+| `Invalid` | Unrecognized command received on NUS RX |
+| `<utf8_char>` | Translated English or Bangla character |
 
-The Teacher Software connects to each student's device using the Web Serial API and reads the stream inside a dedicated `readLoop()` per student. Each character or status message arrives as a plain string and is passed immediately to `handleStudentChar()` for processing:
+### Incoming (`Host → Device` via BLE NUS RX `6E400003-...`)
 
-```javascript
-// Connecting to BrailleBridge via Web Serial API
-async function connectStudentSerial(student) {
-  const port = await navigator.serial.requestPort();
-  await port.open({ baudRate: 115200 });
-  student.serialPort = port;
-  student.connected = true;
+| Command | Effect |
+|---|---|
+| `LANG:en` | Switches firmware to English and echoes `LANG:en` |
+| `LANG:bn` | Switches firmware to Bangla and echoes `LANG:bn` |
 
-  const decoder = new TextDecoderStream();
-  port.readable.pipeTo(decoder.writable);
-  const reader = decoder.readable.getReader();
+<CodeGroup>
+```javascript Web Bluetooth (Browser)
+const NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const NUS_TX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+const NUS_RX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
-  async function readLoop() {
-    while (student.readLoopActive) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      for (const ch of value) handleStudentChar(student, ch);
-    }
-  }
-  readLoop();
-}
+const device = await navigator.bluetooth.requestDevice({
+  filters: [{ namePrefix: 'BrailleBridge' }],
+  optionalServices: [NUS_SERVICE],
+});
+const server = await device.gatt.connect();
+const service = await server.getPrimaryService(NUS_SERVICE);
+const tx = await service.getCharacteristic(NUS_TX);
+await tx.startNotifications();
+tx.addEventListener('characteristicvaluechanged', (e) => {
+  const line = new TextDecoder().decode(e.target.value).trim();
+  console.log('BB1:', line);
+});
 ```
 
-`TextDecoderStream` handles multi-byte UTF-8 sequences automatically, so Bangla Unicode characters (which are 3 bytes each) arrive as complete strings without any manual byte reassembly. Set `student.readLoopActive = false` and call `reader.cancel()` to cleanly disconnect a student mid-session.
+```python Python (bleak BLE NUS)
+import asyncio
+from bleak import BleakClient
 
-## Browser requirements
+NUS_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
 
-The Web Serial API is required to connect BrailleBridge to the Teacher Software from a browser. Only **Chrome 89+** and **Edge 89+** support this API.
+async def listen(address: str):
+    async with BleakClient(address) as client:
+        await client.start_notify(
+            NUS_TX, lambda _, data: print(data.decode("utf-8", errors="ignore"))
+        )
+        await asyncio.sleep(60)
+```
 
-<Warning>
-  **Firefox and Safari do not support the Web Serial API** and cannot connect to BrailleBridge through the Teacher Software. Make sure the teacher's machine runs a supported Chromium-based browser before your exam session begins. If Chrome or Edge is not available, use a custom desktop application with a system serial library instead (see **Custom integrations** below).
-</Warning>
-
-## Custom integrations
-
-If you want to build your own application on top of BrailleBridge output, you can read the USB Serial stream from any language or tool that supports serial communication. Every message is plain UTF-8 and newline-terminated (`\n`), so a simple line-by-line read loop is all you need.
-
-Common options:
-
-- **Python** — use the [`pyserial`](https://pyserial.readthedocs.io/) library. Open the port at 115200 baud and call `readline()` in a loop.
-- **Node.js** — use the [`serialport`](https://serialport.io/) package. The `ReadlineParser` splits on `\n` automatically.
-- **Serial terminal** — tools like PuTTY, minicom, or the Arduino IDE Serial Monitor at 115200 baud will display the raw stream directly, which is useful for debugging chord mappings.
-
-```python
-# Reading BrailleBridge output with Python pyserial
+```python Python (pyserial USB Backup)
 import serial
 
-port = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1)
-
-while True:
-    line = port.readline().decode('utf-8').strip()
-    if line:
-        print(line)  # e.g. "a", "LANG:bn", "অ"
+with serial.Serial("COM5", baudrate=115200, timeout=1) as ser:
+    while True:
+        line = ser.readline().decode("utf-8", errors="ignore").strip()
+        if line:
+            print(line)
 ```
-
-Because the protocol is nothing more than newline-delimited UTF-8 strings, you can pipe it into log files, databases, accessibility tools, or any classroom management software that accepts a text feed — no custom driver or proprietary SDK required.
+</CodeGroup>
