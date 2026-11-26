@@ -30,9 +30,13 @@ Before your students can start typing, you need to add each student to the roste
   </Step>
 </Steps>
 
-## Connecting multiple students
+## Connecting multiple students (Verified Multi-ESP32 Classroom Operation)
 
-Repeat the steps above for each student in your class. Every student you add gets their own independent serial reader loop running in the background — one student's connection has no effect on any other. There is no hard limit on the number of students the software can handle; add as many students as you have devices and USB ports available.
+<Check>
+  **Tested with Multiple ESP32s — Verified Success:** Multi-device classroom operation has been tested and confirmed working with multiple physical ESP32 units (**BrailleBridge 2** and **BrailleBridge 3**) connected simultaneously to the Teacher Software. Both devices streamed live beginner Perkins Brailler typing and self-correction backspaces (SYSTEM:BKSP) concurrently into separate student document tabs without interference.
+</Check>
+
+Repeat the steps above for each student in your class. Every student you add gets their own independent BLE NUS / Serial reader stream running in the background — one student's connection has no effect on any other. In the native Desktop Teacher Suite (raille-desktop), clicking **Scan BLE** automatically powers on the Windows Bluetooth radio (winrt.windows.devices.radios), discovers all active ESP32 units (BrailleBridge 2, BrailleBridge 3, etc.), auto-connects each student on **+ Add Student**, and auto-advances the device dropdown to the next available ESP32.
 
 If you are connecting many students at once, it helps to label your USB cables or use a powered USB hub so you can quickly identify which physical port corresponds to which student in the browser's port picker.
 

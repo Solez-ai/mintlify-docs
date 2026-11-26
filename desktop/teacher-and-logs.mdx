@@ -1,25 +1,30 @@
 ---
 title: "Classroom Teacher Console, Smart Logs & TTS"
 sidebarTitle: "Teacher Console & Logs"
-description: "Managing multiple students, live Feed cards, SmartFormatter structured logs, Google Translate, and Windows SAPI Text-to-Speech."
+description: "Managing multiple ESP32 student devices simultaneously, Microsoft Word-style Student Document Tabs, SmartFormatter structured logs, Google Translate, and 100%-300% boosted Text-to-Speech."
 ---
 
-## Teacher View (Multi-Student Grid)
+<Check>
+  **Multi-ESP32 Classroom Testing Succeeded:** Tested live with multiple physical ESP32 units (**`BrailleBridge 2`** and **`BrailleBridge 3`**) connected concurrently. Each student device streams into its own dedicated Microsoft Word–style document sheet with live 6-dot `MiniBrailleCell` indicators and zero stream cross-talk.
+</Check>
 
-In **Teacher** mode (`main.py`), every student in `roster.json` is rendered as a live card inside a responsive 2-column grid:
+## Teacher View (Per-Student Word Document Tabs)
 
-- **Add Student**: Choose **Bluetooth (BLE)**, **USB Serial**, or **Assign Later**, bind a device address/port, and start streaming immediately.
-- **Live Card Controls**: View live translated text alongside a `MiniBrailleCell` showing the student's current chord, **Expand** into a large-type modal (`_open_expand_student_dialog`) for readability from across a desk, **Test** with simulated chord input, **Export**, **Clear**, or **Remove** the student.
+In **Teacher** mode (`main.py`), the classroom roster always launches completely clean (`0 students`, with no pre-populated demo entries) so the teacher adds real student devices directly:
 
-## Logs View & `SmartFormatter`
+- **One-Click Add & Auto-Connect**: Enter the student's name, pick **Bluetooth LE** (or **USB Serial**), and click **`+ Add Student`**. The app automatically connects to the selected ESP32 (e.g., `BrailleBridge 2`), sends the `SYSTEM:START` handshake, switches focus to that student's document tab, and advances the device selector to the next unassigned ESP32 (e.g., `BrailleBridge 3`) so adding the next student takes one click.
+- **Horizontal Student Document Tab Bar**: Below the Teacher ribbon, a horizontal tab bar lists every connected student (`● Student Name (char count)`). Clicking any tab switches the centered Microsoft Word–style paper sheet (`teacher_paper`) to that student's live document while all other connected ESP32s continue streaming in the background.
+- **Live Document Controls**: View the student's live `MiniBrailleCell` 6-dot indicator (supporting both lowercase and uppercase chords), **Connect / Disconnect**, **Test**, **Export** to the Exports archive, **Clear** (which also transmits `SYSTEM:START` to restart live demo typing cleanly), or **Remove** the student.
 
-The **Logs** view replaces the legacy Exam View and parses raw student transcripts through **`SmartFormatter`** (`protocol.py`) into structured visual blocks:
+## Exports View & `SmartFormatter`
+
+The **Exports** view features a full-width top action ribbon above a 250 px student directory sidebar and a centered Microsoft Word–style document reader, parsing raw student transcripts through **`SmartFormatter`** (`relay.py`) into structured visual blocks:
 
 - `title`, `heading`, `question`, `answer`, `math`, `callout`, `bullet`, `numbered`, and `para`
-- Toggle **Plain Text** view for raw character inspection
-- Translate any student's log via Google Translate (`translate.googleapis.com/translate_a/single?client=gtx`)
-- Export formatted transcripts to `{student}_formatted_log.txt` (or auto-saved `{name}_{YYYY-MM-DD_HH-MM-SS}.log` on disconnect)
+- Full-width ribbon controls for session selection, language target selection, **Translate**, **Plain Text** toggle, **Export All**, and **Save .txt** with zero header clipping
+- Translate any student's document via Google Translate (`translate.googleapis.com/translate_a/single?client=gtx`)
+- Export formatted transcripts to `{student}_formatted_log.txt` (plus auto-saved `{name}_{YYYY-MM-DD_HH-MM-SS}.log` transcripts in `logs/`)
 
-## Speech Synthesis (`SpeechEngine`)
+## Speech Synthesis & 100%–300% Sound Booster (`SpeechEngine`)
 
-In `protocol.py`, `SpeechEngine.speak()` announces characters, symbols (`SYMBOL_SPEECH`), capital letters (`"capital A"`), and full words on Space in Learn Freeplay mode using Windows SAPI (`System.Speech.Synthesis.SpeechSynthesizer` at `$s.Rate = 1` via asynchronous PowerShell on `win32`).
+In `protocol.py`, `SpeechEngine.speak()` announces characters, symbols (`SYMBOL_SPEECH`), capital letters (`"capital A"`), and full words on Space using Windows SAPI (`System.Speech.Synthesis.SpeechSynthesizer` rendered to WAV and amplified via a 16-bit PCM **Sound Booster** selectable from **100% to 300%** in the Student ribbon).
