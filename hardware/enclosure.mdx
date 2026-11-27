@@ -4,7 +4,7 @@ sidebarTitle: "Enclosure"
 description: "Download and print the BrailleBridge enclosure using the included STL files. Two-piece FDM shell with MX-compatible switch cutouts, M3 screw assembly."
 ---
 
-The BrailleBridge enclosure is a two-piece 3D-printed shell designed to hold the ESP32, perfboard, eight Outemu switches, and optional battery in a compact, desk-friendly form factor. Because the design is an open CAD model rather than an injection-mould tooling file, any school, makerspace, or engineering student with access to a standard FDM printer can produce a complete enclosure for roughly **$1.20 in filament**. If a shell cracks or a switch cutout wears out, you simply reprint the affected part.
+The BrailleBridge enclosure is a two-piece 3D-printed shell designed to hold the ESP32, BB1 Wiring Board v4 PCB, eight Outemu switches, and optional battery in a compact, desk-friendly form factor. Because the design is an open CAD model rather than an injection-mould tooling file, any school, makerspace, or engineering student with access to a standard FDM printer can produce a complete enclosure for roughly **$1.20 in filament**. If a shell cracks or a switch cutout wears out, you simply reprint the affected part.
 
 ## STL files
 
@@ -13,7 +13,7 @@ The repository includes two ready-to-slice STL files in the `models/` directory:
 | File | Description |
 |---|---|
 | `models/TOP_SHELL.stl` | Top half of the enclosure — holds the switch plate and keycap openings |
-| `models/BOTTOM_SHELL.stl` | Bottom half — houses the ESP32, perfboard, and optional battery |
+| `models/BOTTOM_SHELL.stl` | Bottom half — houses the ESP32, BB1 Wiring Board v4 PCB, and optional battery |
 
 Both files were designed in **Fusion 360** and exported as watertight STL meshes. You can open either file in any slicer (PrusaSlicer, Cura, Bambu Studio, etc.) without modification, or re-import them into Fusion 360 if you want to adapt the design for a different switch layout or board size.
 
@@ -49,7 +49,7 @@ The enclosure was designed with both usability and manufacturability in mind:
     Press each Outemu Red switch into its MX-compatible cutout on the top shell from above. The switch clips should audibly click into place. No glue is needed — the snap-fit holds the switch securely during normal use and still allows removal if a switch needs replacing.
   </Step>
   <Step title="Seat the ESP32 in the bottom cavity">
-    Place your wired perfboard and ESP32 into the internal cavity of the bottom shell. Route the signal wires from the switches through the internal channel to the perfboard. Refer to the [GPIO Mapping](/hardware/gpio-mapping) page for the exact pin-to-switch connections before closing the shell.
+    Place your wired BB1 Wiring Board v4 PCB and ESP32 into the internal cavity of the bottom shell. Route the signal wires from the switches through the internal channel to the BB1 Wiring Board v4 PCB. Refer to the [GPIO Mapping](/hardware/gpio-mapping) page for the exact pin-to-switch connections before closing the shell.
   </Step>
   <Step title="Close the shell with M3 screws">
     Align the top and bottom shells and fasten them together with M3 screws at each corner post. Tighten finger-tight — the PLA bosses do not need high torque, and over-tightening can crack the posts.

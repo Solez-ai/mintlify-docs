@@ -12,24 +12,28 @@ BrailleBridge evolved from a single breadboard/perfboard USB prototype into a co
 
 | Subsystem | Legacy Prototype | Current Production Architecture |
 |---|---|---|
-| **Primary Transport** | USB Serial (`115200` baud) + single-device BLE HID | **Bluetooth-first**: BLE HID Keyboard + concurrent **BLE Nordic UART Service (NUS)** + USB Serial fallback |
-| **Multi-Device Scale** | 1 student per browser tab (Web Serial) | **Multi-bridge pool** in both PyQt6 Desktop (`RelayManager` + `BleManager`) and Android (`BleProxyService` `ConcurrentHashMap`) |
-| **Hardware Wiring** | Loose breadboard / perfboard wires, USB-only | **BB1 Wiring Board v2** — custom 2-layer KiCad 10 PCB (`66 × 41 × 1.2 mm`), `4×AA` battery power via slide switch & `1N5819`, `38-pin` ESP32 female sockets |
-| **Chording Engine** | Fixed `180 ms` commit window | **Decode-on-release** state machine (`DEBOUNCE_MS = 15`, `CHORD_HOLD_MAX_MS = 5000`) + Shift tap-for-backspace + Dot 6 Capital lock |
-| **Teacher Software** | Static HTML Web Serial prototype | **Native PyQt6 Desktop Suite** + **Android Jetpack Compose App** with Smart Formatter, Google Translate, TTS, and persistent rosters |
-| **Web Platform** | Basic demo page | Virtual 6-dot pad, Web Bluetooth + Web Serial bridge, **Three.js `.glb` 3D PCB viewer**, and **2D KiCad SVG layer inspector** |
+| **Primary Transport** | USB Serial (`115200` baud) + single-device BLE HID | **Bluetooth-first**: BLE HID Keyboard + concurrent **BLE Nordic UART Service (NUS)** + WinRT auto-radio activation + hybrid USB failover |
+| **Multi-Device Scale** | 1 student per browser tab (Web Serial) | **Hardware-verified multi-ESP32 pool** (`BrailleBridge 2` & `BrailleBridge 3` tested simultaneously) in PyQt6 Desktop (`RelayManager` + `BleManager`) and Android (`BleProxyService`) |
+| **Hardware Wiring** | Loose breadboard / perfboard wires, USB-only | **BB1 Wiring Board v4** — custom 2-layer KiCad 10 PCB (`66 × 52 × 1.2 mm`), socketed `5 V` buck-boost regulator (`J5`, `3–16 V`) + `JP1` bypass/regulated selector + dual `1N5819` diodes (`D1`, `D2`) + `38-pin` ESP32 sockets |
+| **Chording Engine** | Fixed `180 ms` commit window | **Decode-on-release** state machine (`DEBOUNCE_MS = 15`, live-tunable `5–50 ms`, `CHORD_HOLD_MAX_MS = 5000`) + Shift tap-for-backspace + Dot 6 Capital lock |
+| **Teacher Software** | Static HTML Web Serial prototype | **Native PyQt6 Microsoft Word–Style Desktop Suite** (permanent 22 pt Zoom canvas, per-student Teacher document tabs, 100%–300% Sound Booster) + **Android Jetpack Compose App** |
+| **Web Platform** | Basic demo page | Virtual 6-dot pad, Web Bluetooth + Web Serial bridge, **Three.js `.glb` 3D PCB viewer (`bb1_wiring_board_v4.glb`)**, and **2D KiCad SVG layer inspector** |
+
+<Check>
+  **Tested with Multiple ESP32s — Complete Success:** The multi-student classroom architecture was hardware-tested using multiple physical ESP32 units (**`BrailleBridge 2`** and **`BrailleBridge 3`**) connected concurrently to the Teacher Console, confirming simultaneous real-time streaming into individual student Word document tabs with zero interference.
+</Check>
 
 ## Who Uses BrailleBridge?
 
 <CardGroup cols={2}>
   <Card title="Blind & Visually Impaired Students" icon="universal-access">
-    Type privately in Grade 1 English Braille or Bharati Bangla Braille using familiar mechanical Outemu Red switches, with instant audio feedback via screen readers or built-in TTS.
+    Type privately in Grade 1 English Braille or Bharati Bangla Braille using familiar mechanical Outemu Red switches, with instant audio feedback via screen readers or the built-in 100%–300% boosted SAPI TTS.
   </Card>
   <Card title="Teachers & Exam Invigilators" icon="chalkboard-user">
-    Monitor an entire classroom of Bluetooth-connected BrailleBridge devices simultaneously on Windows/macOS/Linux Desktop or Android — zero Braille reading skill required.
+    Monitor an entire classroom of Bluetooth-connected BrailleBridge ESP32 devices simultaneously in per-student Microsoft Word–style document tabs on Windows/macOS/Linux Desktop or Android — zero Braille reading skill required.
   </Card>
   <Card title="Schools & Makers" icon="screwdriver-wrench">
-    Order the verified 2-layer `BB1 Wiring Board v2` from JLCPCB using ready-to-manufacture Gerbers, snap in 8 Outemu switches and a 38-pin ESP32 DevKit, and flash via Arduino IDE.
+    Order the verified 2-layer `BB1 Wiring Board v4` (`66 × 52 × 1.2 mm`) from JLCPCB using ready-to-manufacture Gerbers, choose `4×AA` direct bypass (`JP1 1-2`) or plug in a `3–16 V` 5 V buck-boost module (`J5`, `JP1 2-3`), snap in 8 Outemu switches and a 38-pin ESP32 DevKit, and flash via Arduino IDE.
   </Card>
   <Card title="Developers & Researchers" icon="code">
     Integrate directly with the open newline-delimited UTF-8 **Nordic UART Service (`6E400001-...`)** or `115200` baud Serial protocol from any BLE or serial host.

@@ -44,11 +44,13 @@ BrailleBridge is built from standard, affordable components. The table below sum
 | Braille keys | 6 (Outemu Red mechanical switches) |
 | Additional keys | Space, Shift |
 | Chording engine | Decode-on-release + 15 ms debounce (live-tunable) |
-| Output channels | Bluetooth HID + USB Serial |
+| Output channels | Bluetooth HID + BLE Nordic UART Service (NUS) + USB Serial |
+| Custom PCB | BB1 Wiring Board v4 (66 x 52 x 1.2 mm, 2-layer KiCad 10, J5 5V buck-boost socket, JP1 selector, dual 1N5819) |
+| Multi-ESP32 Validation | Tested & verified with multiple physical ESP32s (BrailleBridge 2 & BrailleBridge 3) streaming simultaneously |
 | Languages | English, Bangla (Bharati Braille) |
 | Shift functions | Caps, numbers, punctuation, math |
 | Enclosure | Fusion 360 CAD, FDM 3D-printed |
-| Teacher Software | HTML / CSS / JS (Web Serial API) |
+| Teacher Software | Native PyQt6 Desktop Suite (Word-style document tabs) + Android Jetpack Compose App + Web Console |
 | Cost | ~$12 per device |
 
 <Tip>

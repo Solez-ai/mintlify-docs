@@ -16,11 +16,11 @@ In `website/script.js` (`#demo` in `index.html`), visitors and students can test
 
 ## Interactive 3D PCB Viewer (`pcb-viewer.js`)
 
-`initPcb3dViewer()` mounts a `THREE.WebGLRenderer` (ACESFilmic tone mapping, `PCFSoftShadowMap`, `RoomEnvironment` PMREM studio lighting) with `OrbitControls` and `GLTFLoader` loading **`assets/pcb/bb1_wiring_board_v2.glb`** (`66.0 × 41.0 × 1.2 mm`):
+`initPcb3dViewer()` mounts a `THREE.WebGLRenderer` (ACESFilmic tone mapping, `PCFSoftShadowMap`, `RoomEnvironment` PMREM studio lighting) with `OrbitControls` and `GLTFLoader` loading **`assets/pcb/bb1_wiring_board_v4.glb`** (`66.0 × 52.0 × 1.2 mm`):
 
 - **Camera Controls**: `Iso`, `Top (Z)`, `Bottom (-Z)`, `Reset`, `Orbit` auto-rotate, and Zoom In/Out.
 - **Layer Visibility Toggles**: Independently toggle 3D component models (`#pcb3dVisModels`), green solder mask (`#pcb3dVisMask`), silkscreen (`#pcb3dVisSilk`), and floor shadow (`#pcb3dVisShadow`).
-- **Quick-Inspect & Raycasting**: Jump straight to `board`, `esp32` (`J2/J4`, `20.300 mm` row spacing), `switches` (`J1` 1×16), `power` (`J3` 1×4), `diode` (`D1` `1N5819`), or `mounts` (`H1/H2` M2 holes) — or click any mesh directly to highlight it in Bridge Orange (`#FF7315`) and read its exact millimeter board coordinates.
+- **Quick-Inspect & Raycasting**: Jump straight to `board`, `esp32` (`J2/J4`, `20.300 mm` row spacing), `switches` (`J1` 1×16), `power` (`J3` 1×4 + `J5` 5V buck-boost socket + `JP1` bypass/regulated selector), `diodes` (`D1/D2` dual `1N5819`), or `mounts` (`H1/H2` M2 holes) — or click any mesh directly to highlight it in Bridge Orange (`#FF7315`) and read its exact millimeter board coordinates.
 
 ## Interactive 2D KiCad PCB Layer Inspector
 

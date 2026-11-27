@@ -10,7 +10,7 @@ BrailleBridge uses a custom `BBKeyboard` stack (`braile/BBKeyboard.h` and `brail
 
 | Parameter | Value |
 |---|---|
-| **BLE Advertised Name** | `BrailleBridge` (max 15 chars) |
+| **BLE Advertised Name** | `BrailleBridge` (or `BrailleBridge 2`, `BrailleBridge 3` for multi-ESP32 classroom units; max 15 chars) |
 | **BLE MTU** | `247` bytes (`BLEDevice::setMTU(247)`) |
 | **BLE Security** | `ESP_LE_AUTH_REQ_SC_MITM_BOND` |
 | **HID PnP ID** | `vid = 0x05ac`, `pid = 0x820a`, `version = 0x0210` |
@@ -45,8 +45,12 @@ BLE callbacks run on the NimBLE/Bluedroid task, while chord scanning runs in Ard
 
 | Command | Effect |
 |---|---|
+| `SYSTEM:START` / `RESET` | Sent automatically on Teacher BLE/USB connect (and on Clear) to synchronize or restart classroom demo streaming |
 | `LANG:en` | Switches firmware to English and echoes `LANG:en` |
 | `LANG:bn` | Switches firmware to Bangla and echoes `LANG:bn` |
+| `DEBOUNCE:<5..50>` | Live-updates switch debounce filter (`ms`) and echoes `SYSTEM:DEBOUNCE=<ms>` |
+| `WINDOW:<0\|50..300>` | Live-updates chord collection window (`0` = decode-on-release) and echoes `SYSTEM:WINDOW=<ms>` |
+| `RESET_TIMING` | Restores `DEBOUNCE=15`, `WINDOW=0` and echoes `SYSTEM:TIMING_DEFAULT` |
 
 <CodeGroup>
 ```javascript Web Bluetooth (Browser)

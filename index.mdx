@@ -10,15 +10,19 @@ description: "Bluetooth-first, multi-device Braille writing system — custom Ki
 
 **BrailleBridge (`b°bridge`)** is an open-source, commercial-ready bilingual Braille writing and multi-student classroom ecosystem built by **Solez AI**. Blind and visually impaired students type familiar six-dot Braille chords on a tactile mechanical keyboard (`~$12` BOM), while an ESP32 microcontroller decodes each chord on release and streams translated English or Bangla text over **Bluetooth Low Energy (BLE HID + Nordic UART Service)** and **USB Serial (`115200` baud)** simultaneously.
 
+<Check>
+  **Hardware-Verified Multi-ESP32 Classroom Success:** Tested and confirmed working live with multiple physical ESP32 units (**`BrailleBridge 2`** and **`BrailleBridge 3`**) connected simultaneously to the Teacher Software, streaming independent student documents in real time into per-student Microsoft Word–style document tabs.
+</Check>
+
 <CardGroup cols={2}>
   <Card title="Architecture & How It Works" icon="gears" href="/how-it-works">
-    Decode-on-release chording, dual BLE HID + NUS GATT channels, USB Serial, and multi-bridge classroom routing.
+    Decode-on-release chording, dual BLE HID + NUS GATT channels, USB Serial, and verified multi-ESP32 classroom routing.
   </Card>
-  <Card title="BB1 Wiring Board v2 (PCB)" icon="microchip" href="/hardware/pcb-v2">
-    Custom 2-layer KiCad 10 PCB (66 × 41 × 1.2 mm), 38-pin ESP32 DevKit sockets, 1N5819 power chain, and 0-violation DRC.
+  <Card title="BB1 Wiring Board v4 (PCB)" icon="microchip" href="/hardware/pcb-v2">
+    Custom 2-layer KiCad 10 PCB (66 × 52 × 1.2 mm), plug-in 5 V buck-boost socket (J5), JP1 bypass/regulated jumper, dual 1N5819 diodes, 38-pin ESP32 sockets, and 0-violation DRC.
   </Card>
-  <Card title="PyQt6 Desktop Console" icon="desktop" href="/desktop/overview">
-    Multi-device BLE + USB Serial classroom console with Student, Teacher, Smart-Formatted Logs, and Learn modes.
+  <Card title="PyQt6 Desktop Suite" icon="desktop" href="/desktop/overview">
+    Microsoft Word–style editorial classroom suite with per-student Teacher document tabs, permanent 22 pt Zoom canvas, 100%–300% Sound Booster, and verified multi-ESP32 BLE + USB support.
   </Card>
   <Card title="Android Companion App" icon="mobile" href="/android/overview">
     Jetpack Compose + Material 3 app with foreground `BleProxyService` supporting simultaneous multi-bridge connections.
@@ -29,13 +33,13 @@ description: "Bluetooth-first, multi-device Braille writing system — custom Ki
 
 ```mermaid
 flowchart LR
-    HW["BB1 Hardware<br/>8x Outemu Red + ESP32 DevKit<br/>4xAA + Slide Switch + 1N5819"]
+    HW["BB1 Hardware (v4 PCB)<br/>8x Outemu Red + ESP32 DevKit<br/>J5 5V Buck-Boost + JP1 + Dual 1N5819"]
     HID["BLE HID Keyboard<br/>Student Phone / Tablet / PC<br/>(ASCII + Screen Reader)"]
-    NUS["BLE Nordic UART (NUS)<br/>Multi-Device UTF-8 Stream<br/>(English + Bangla + Control)"]
-    USB["USB Serial (115200 baud)<br/>Wired Classroom Backup"]
-    DT["PyQt6 Desktop App<br/>bleak + pyserial + SAPI TTS"]
+    NUS["BLE Nordic UART (NUS)<br/>Multi-ESP32 UTF-8 Stream<br/>(BrailleBridge 2 & 3 Verified)"]
+    USB["USB Serial (115200 baud)<br/>Hybrid Powered Failover"]
+    DT["PyQt6 Desktop Suite<br/>Word-Style Document Tabs + SAPI Booster"]
     AND["Android Compose App<br/>BleProxyService + Room DB"]
-    WEB["Web Platform & 3D Viewer<br/>Web Bluetooth + Three.js GLB"]
+    WEB["Web Platform & 3D Viewer<br/>Web Bluetooth + Three.js v4 GLB"]
 
     HW --> HID
     HW --> NUS
@@ -51,7 +55,7 @@ flowchart LR
 
 <Steps>
   <Step title="Student presses a Braille chord">
-    Six dot switches (`GPIO 14, 12*, 13, 27, 26, 25`), Space (`GPIO 33`), and Shift (`GPIO 32`) are polled through a `15 ms` debounce filter using ESP32 internal `INPUT_PULLUP` resistors.
+    Six dot switches (`GPIO 14, 12*, 13, 27, 26, 25`), Space (`GPIO 33`), and Shift (`GPIO 32`) are polled through a `15 ms` debounce filter using ESP32 internal `INPUT_PULLUP` resistors on the **BB1 Wiring Board v4**.
   </Step>
   <Step title="Firmware decodes on key release">
     Instead of a fixed timer, `braile.ino` accumulates the 6-bit dot mask while keys are held and commits the chord as soon as all dot keys are released (with a `5,000 ms` stuck-key guard).
@@ -59,7 +63,7 @@ flowchart LR
   <Step title="Dual Bluetooth + USB broadcast">
     ASCII characters fire as standard **BLE HID** keystrokes (read aloud by TalkBack/VoiceOver/Narrator) while both ASCII and multi-byte Bangla UTF-8 stream over **BLE NUS** (`6E400001-...`) and **USB Serial** at `115200` baud.
   </Step>
-  <Step title="Multi-bridge classroom ingestion">
-    Teachers connect **multiple BrailleBridge units concurrently** over Bluetooth (desktop `bleak` / WinRT or Android `BleProxyService`) or USB Serial — monitoring live feeds, translating, and exporting formatted `.txt` / `.log` transcripts.
+  <Step title="Multi-ESP32 classroom ingestion (Verified Success)">
+    Teachers connect **multiple physical ESP32 BrailleBridge units concurrently** (`BrailleBridge 2`, `BrailleBridge 3`, etc.) over Bluetooth (with automatic Windows WinRT Bluetooth radio activation) or USB Serial — monitoring each student's live Microsoft Word–style document tab, translating, and exporting formatted `.txt` / `.log` transcripts.
   </Step>
 </Steps>

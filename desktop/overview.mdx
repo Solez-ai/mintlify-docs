@@ -31,25 +31,25 @@ python main.py
 
 | File | Responsibility |
 |---|---|
-| `main.py` | `BrailleBridgeWindow(QMainWindow)` with 4 stacked views (`student`, `teacher`, `logs`, `learn`), `BrailleDotButton`, `MiniBrailleCell`, `StatusDot`, and `ThemePalette.DARK` / `LIGHT` |
-| `relay.py` | `RelayManager` (concurrent BLE + USB Serial pool), `BleManager` (`bleak` + Windows `winrt`), `RelayBridge` (`QObject` thread-safe Qt signals), ROM `BOOT_PREFIXES` filter, JSON & `.log` persistence |
-| `protocol.py` | Complete English & Bangla Braille dictionary parity, `SmartFormatter`, `decode_text_to_steps`, `translate_text` (Google Translate), and `SpeechEngine` |
-| `icons.py` | Crisp Lucide-style SVG icon renderer for Light and Dark modes |
+| `main.py` | `BrailleBridgeWindow(QMainWindow)` with 4 Microsoft Word–style views (`student`, `teacher`, `logs`, `learn`), permanent 22 pt Zoom paper canvas, per-student Teacher Document Tab Bar, full-width Exports ribbon, `BrailleDotButton`, `MiniBrailleCell`, `StatusDot`, and `ThemePalette.LIGHT` (Midnight Navy `#001242`, Warm Cream `#FAF6F0`, Bridge Orange `#FF7315`) |
+| `relay.py` | `RelayManager` (concurrent multi-ESP32 BLE + USB Serial pool), `BleManager` (`bleak` + Windows `winrt.windows.devices.radios` auto-radio activation + serialized `_op_lock` + hybrid USB-powered failover), `RelayBridge` (`QObject` thread-safe Qt signals), ROM `BOOT_PREFIXES` & inline `SYSTEM:*` stream sanitizer, JSON & `.log` persistence |
+| `protocol.py` | Complete English & Bangla Braille dictionary parity, `SmartFormatter`, `decode_text_to_steps`, `translate_text` (Google Translate), and `SpeechEngine` (with 100%–300% 16-bit PCM WAV Sound Booster) |
+| `icons.py` | Crisp Lucide-style SVG icon renderer for the Light-mode editorial workspace |
 
 ## Four Application Modes
 
 <CardGroup cols={2}>
   <Card title="Student View" icon="keyboard">
-    Interactive 6-dot `BrailleDotButton` pad, Commit/Space/Backspace controls, Bento KPI row, expandable **Live Output**, Speech/Lang/Caps/Shift toggles, Google Translate, and **Send to Teacher Roster**.
+    2-row Microsoft Word–style action ribbon, centered paper document sheet permanently set to high-readability 22 pt font, 100%–300% **Sound Booster**, Speech/Lang/Caps/Shift toggles, collapsible 6-dot **Braille Pad** drawer, Google Translate, and **Mirror to Teacher**.
   </Card>
   <Card title="Teacher View" icon="users">
-    2-column multi-student grid supporting **multiple simultaneous BLE & USB bridges**, live `MiniBrailleCell` dot display, **Expand** modal, **Test** simulator, **Export**, **Clear**, and **Remove**.
+    Starts with a clean `0 students` roster, one-click **`+ Add Student`** auto-connect & auto-advance, horizontal **Student Document Tab Bar** for switching between multiple concurrently streaming ESP32s (verified with `BrailleBridge 2` & `BrailleBridge 3`), centered active student Word paper sheet, live `MiniBrailleCell` dot display, **Test**, **Export**, **Clear** (`SYSTEM:START` reset), and **Remove**.
   </Card>
-  <Card title="Logs View" icon="file-lines">
-    Replaces legacy Exam View: per-student session archive with `SmartFormatter` block rendering (`title`, `heading`, `question`, `answer`, `math`, `callout`, `bullet`), **Plain Text** toggle, Translate, and `.txt` export.
+  <Card title="Exports View" icon="file-lines">
+    Full-width top Exports ribbon (Session selector, Language selector, **Translate**, **Plain Text**, **Export All**, **Save .txt**) above a 250 px student directory sidebar and a centered Word paper reader with `SmartFormatter` block rendering (`title`, `heading`, `question`, `answer`, `math`, `callout`, `bullet`).
   </Card>
   <Card title="Learn View" icon="graduation-cap">
-    **Freeplay Playground** (with word-level TTS on Space + `Repeat Last Word` + `Export Progress`) and **See What Codes You Need** chord-by-chord lookup trainer (`decode_text_to_steps`).
+    **Freeplay** (with character and word-level boosted TTS on Space + `Repeat Last Word` + `Export Progress`) and **Chord Lookup** trainer (`decode_text_to_steps`).
   </Card>
 </CardGroup>
 

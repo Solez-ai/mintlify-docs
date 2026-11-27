@@ -7,25 +7,25 @@ description: "Power up a BrailleBridge device, connect via Bluetooth (or USB Ser
 Get a BrailleBridge BB1 unit connected to a student device and a teacher console in under five minutes.
 
 <Steps>
-  <Step title="Power on the BB1 hardware">
-    Insert `4×AA` batteries into the battery pack and flip the slide power switch **ON** (or plug a Micro-USB cable into the 38-pin ESP32 DevKit).
+  <Step title="Power on the BB1 hardware (Wiring Board v4)">
+    Connect your battery pack (`4×AA` alkaline on `JP1 1-2` bypass, or `3–16 V` NiMH/Li-ion/9V/DC supply through the `J5` 5 V buck-boost module on `JP1 2-3`) and flip the slide power switch **ON** (or plug a Micro-USB cable into the 38-pin ESP32 DevKit).
 
-    - Battery `+` routes through the slide switch and `1N5819` Schottky diode (`D1`) into the ESP32 `V5`/`VIN` pin.
-    - On boot, the firmware prints `SYSTEM: BrailleBridge Connected. Waiting for BLE...` on USB Serial (`115200` baud) and begins BLE advertising as **`BrailleBridge`**.
+    - On **BB1 Wiring Board v4**, `D2` (`1N5819`) protects the buck-boost module against reverse polarity and `D1` (`1N5819`) isolates USB 5 V from back-feeding into the battery rail before feeding ESP32 `V5`/`VIN` (`J2/19`).
+    - On boot, the firmware prints `SYSTEM: BrailleBridge Connected. Waiting for BLE...` on USB Serial (`115200` baud) and begins BLE advertising (`BrailleBridge`, `BrailleBridge 2`, `BrailleBridge 3`, etc.).
   </Step>
 
-  <Step title="Pair via Bluetooth on Student or Teacher device">
-    Open Bluetooth settings on Windows, macOS, Android, or iOS and pair with **`BrailleBridge`**.
+  <Step title="Connect via Bluetooth on Student or Teacher device">
+    Launch the Desktop Teacher Suite or Android Companion App — no manual Windows Settings pairing is required for BLE NUS classroom streaming.
 
     <Tabs>
-      <Tab title="PyQt6 Desktop App (Recommended)">
+      <Tab title="PyQt6 Desktop Suite (Recommended)">
         ```bash
         cd braille-desktop
         pip install -r requirements.txt
         python main.py
         ```
-        - In **Student View**, select **BLE: BrailleBridge** (or **USB Serial** / **Bluetooth HID Keyboard**).
-        - In **Teacher View**, click **Add Student**, choose **Bluetooth (BLE)**, select each student's BrailleBridge unit, and click **Connect**. Multiple bridges connect simultaneously.
+        - In **Student View**, select **BLE: BrailleBridge** (or **USB Serial** / **Bluetooth HID Keyboard**) and type directly onto the permanent 22 pt Microsoft Word–style document canvas with 100%–300% boosted audio readback.
+        - In **Teacher View**, click **Scan BLE** (which automatically powers on the Windows Bluetooth radio if off), enter a student name, select their ESP32 (`BrailleBridge 2`, `BrailleBridge 3`, etc.), and click **`+ Add Student`**. The app auto-connects immediately, sends `SYSTEM:START`, opens the student's Word document tab, and auto-advances the selector to the next ESP32.
       </Tab>
       <Tab title="Android Companion App">
         Open **BrailleBridge** on Android 7.0+ (`minSdk 24`), grant Bluetooth Scan/Connect permissions, and tap **Add Student** or **Scan BLE** in **Teacher** mode. `BleProxyService` maintains concurrent GATT connections in the background.

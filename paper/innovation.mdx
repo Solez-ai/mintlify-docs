@@ -44,13 +44,16 @@ No existing solution delivers the same combination of features at BrailleBridge'
 | Voice typing | Fast in quiet environments | Fails in noisy classrooms, poor for math |
 | Commercial digital | Advanced accessibility features | $1,000–$5,000+, hard to repair locally |
 | Ordinary keyboard | Cheap, ubiquitous | No six-dot chording |
-| **BrailleBridge** | **Bilingual + teacher software + low cost** | **Prototype stage** |
+| **BrailleBridge** | **Bilingual + multi-ESP32 teacher suite + v4 buck-boost PCB + ~$12 cost** | **Hardware-verified across multiple ESP32s** |
 
 ## Engineering innovations
 
 The engineering choices behind BrailleBridge are as important as the features they enable. Each innovation below solves a specific problem that would otherwise make the system unreliable, expensive, or difficult to maintain.
 
 <AccordionGroup>
+  <Accordion title="Multi-ESP32 concurrent classroom telemetry & v4 buck-boost PCB" icon="microchip">
+    Tested and verified live with multiple physical ESP32 units (`BrailleBridge 2` and `BrailleBridge 3`) connected concurrently to the PyQt6 Teacher Console, streaming independent student documents into per-student Microsoft Word-style tabs with WinRT automatic Bluetooth radio activation. On the hardware side, the 2-layer **BB1 Wiring Board v4** (`66 x 52 x 1.2 mm`) introduces a socketed 5 V buck-boost stage (`J5`) and `JP1` bypass/regulated selector so regional manufacturers can run on `4xAA` alkaline cells or any `3-16 V` battery/DC supply.
+  </Accordion>
   <Accordion title="Decode-on-release chording - retiring the 180 ms fixed window" icon="clock">
     Earlier prototypes used a fixed `180 ms` collection window, which split slower chords (>180 ms finger skew) into wrong characters while capping fast Perkins-style typists (40–70 WPM sustained, 80–100+ WPM peak, 60–110 ms per chord). Replacing that timer with **decode-on-release** plus a **`15 ms` stability debounce** (`debounceMs`, live-tunable `5–50 ms` over BLE NUS or USB Serial) eliminates artificial lag, prevents split chords, and supports **100+ WPM** throughput — with an optional `WINDOW:<ms>` override and one-click `RESET_TIMING` restore from the desktop software.
   </Accordion>
