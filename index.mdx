@@ -29,7 +29,9 @@ description: "Bluetooth-first, multi-device Braille writing system — custom Ki
   </Card>
 </CardGroup>
 
-## System Architecture
+## What Is the BrailleBridge System Architecture?
+
+BrailleBridge connects a tactile six-dot mechanical hardware unit (`BB1` on the 2-layer **BB1 Wiring Board v4** PCB) to both the student's screen reader and the teacher's classroom console simultaneously. The ESP32 microcontroller outputs standard **BLE HID** keystrokes for instant student audio feedback while streaming UTF-8 English and Bharati Bangla text over **BLE Nordic UART Service (NUS)** and **USB Serial (`115200` baud)** to the PyQt6 Desktop Suite, Android Companion App, and Web Platform.
 
 ```mermaid
 flowchart LR
@@ -51,7 +53,9 @@ flowchart LR
     USB --> WEB
 ```
 
-## End-to-End Pipeline
+## How Does the End-to-End Braille Chording Pipeline Work?
+
+Every character typed on BrailleBridge passes through a four-stage deterministic pipeline: 15 ms hardware switch debouncing, decode-on-release 6-bit chord evaluation, simultaneous BLE HID + BLE NUS + USB Serial broadcast, and multi-ESP32 classroom ingestion into per-student document tabs. This guarantees zero split chords for fast typists and instant readable text for sighted teachers.
 
 <Steps>
   <Step title="Student presses a Braille chord">

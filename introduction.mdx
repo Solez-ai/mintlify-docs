@@ -6,9 +6,9 @@ description: "Why BrailleBridge exists, how it scales from one student device to
 
 BrailleBridge removes the sighted human scribe from blind students' classrooms and examinations. Instead of dictating answers aloud to a writer, a student types silently on a compact mechanical six-dot Braille keyboard, receives audio confirmation through their own screen reader, and streams clean English or Bangla text straight to the teacher's console over Bluetooth or USB.
 
-## What Changed in the Current Generation
+## How Does the Current Production Architecture Compare to the Legacy Prototype?
 
-BrailleBridge evolved from a single breadboard/perfboard USB prototype into a complete multi-device hardware and software platform:
+BrailleBridge evolved from a single-student USB breadboard prototype into a Bluetooth-first, multi-student classroom platform built on the **BB1 Wiring Board v4** PCB (`66.0 × 52.0 × 1.2 mm`) with a plug-in 5 V buck-boost power module (`J5`) and selector jumper (`JP1`). Unlike the legacy fixed-window prototype, the production system uses a decode-on-release chording state machine and a multi-threaded Python (`PyQt6` + `Bleak` + `PySerial`) and Android (`Kotlin` + `Jetpack Compose`) relay capable of streaming multiple physical ESP32 units simultaneously.
 
 | Subsystem | Legacy Prototype | Current Production Architecture |
 |---|---|---|
@@ -23,7 +23,9 @@ BrailleBridge evolved from a single breadboard/perfboard USB prototype into a co
   **Tested with Multiple ESP32s — Complete Success:** The multi-student classroom architecture was hardware-tested using multiple physical ESP32 units (**`BrailleBridge 2`** and **`BrailleBridge 3`**) connected concurrently to the Teacher Console, confirming simultaneous real-time streaming into individual student Word document tabs with zero interference.
 </Check>
 
-## Who Uses BrailleBridge?
+## Who Uses BrailleBridge in Classrooms and Examinations?
+
+BrailleBridge serves four primary groups: blind and visually impaired students who write independently in English or Bangla Braille, sighted teachers and exam invigilators who read real-time translated transcripts without knowing Braille, schools and makerspaces that assemble units locally for under $15 USD using regional battery supplies, and developers integrating with the open BLE NUS / USB Serial protocol.
 
 <CardGroup cols={2}>
   <Card title="Blind & Visually Impaired Students" icon="universal-access">

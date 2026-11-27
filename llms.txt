@@ -1,0 +1,21 @@
+# BrailleBridge Documentation (b°bridge)
+
+> Official technical documentation and research paper for BrailleBridge — an open-source, <$15 USD bilingual (English & Bharati Bangla) six-dot Braille chording keyboard and multi-student classroom ecosystem created by Samin Yeasar (Solez-ai).
+
+## Documentation Pages
+- [Home](https://braille.mintlify.site/): System architecture, hardware-verified multi-ESP32 classroom workflow, and end-to-end chording pipeline.
+- [Introduction](https://braille.mintlify.site/introduction): Evolution from breadboard prototype to BB1 Wiring Board v4 PCB and multi-device Bluetooth-first classroom suite.
+- [How It Works](https://braille.mintlify.site/how-it-works): Six-dot bitmask encoding (`uint8_t`), decode-on-release state machine (`15 ms` debounce), and BLE HID + BLE Nordic UART Service (`6E400001-B5A3-F393-E0A9-E50E24DCCA9E`) + USB Serial (`115200` baud) transport split.
+- [Quickstart](https://braille.mintlify.site/quickstart): 5-minute setup guide for BB1 Wiring Board v4 (`JP1 1-2` 4×AA direct bypass vs `JP1 2-3` 5 V buck-boost regulated mode), PyQt6 Desktop Suite, and Android app.
+- [Hardware Overview & BOM](https://braille.mintlify.site/hardware/overview): Complete bill of materials (`~$11.70` parts / `<$15` total) and dual-mode buck-boost power architecture for global/local battery flexibility.
+- [BB1 Wiring Board v4 (KiCad 10 PCB)](https://braille.mintlify.site/hardware/pcb-v2): `66.0 × 52.0 × 1.2 mm` 2-layer FR-4 PCB specification, `J5` Pololu S9V11F5 buck-boost socket, `JP1` selector jumper, dual `1N5819` diodes (`D1`, `D2`), `15` active nets, `12` GND pins, `0` ERC/DRC errors, and full 71-pin netlist table.
+- [GPIO Mapping](https://braille.mintlify.site/hardware/gpio-mapping): ESP32 38-pin GPIO assignments (`GPIO 14, 12*, 13, 27, 26, 25, 33, 32`) and `GPIO 12` boot-strapping safety notes.
+- [3D-Printed Enclosure](https://braille.mintlify.site/hardware/enclosure): Parametric Fusion 360 wedge chassis (`180 × 80 mm`, `7.1°` slope, back hinge, snap latches, underside AA hatch).
+- [Chord Encoding & Dictionaries](https://braille.mintlify.site/firmware/chord-encoding): Binary bitmask math and 54-entry `braileDict[]` lookup priority.
+- [Serial & BLE Protocol](https://braille.mintlify.site/firmware/serial-protocol): Bare UTF-8 character stream and newline-delimited control tokens (`LANG:en`, `LANG:bn`, `SYSTEM:BKSP`, `SYSTEM:CAP_ONCE`, `SYSTEM:CAP_LOCK`, `SYSTEM:CAP_OFF`).
+- [PyQt6 Desktop Suite](https://braille.mintlify.site/desktop/overview): Multi-threaded Python BLE (`Bleak` + WinRT) & USB Serial (`PySerial`) relay server, offline TTS (`pyttsx3`), and per-student Word-style document tabs.
+- [Android Companion App](https://braille.mintlify.site/android/overview): Kotlin 2.2 + Jetpack Compose + Material 3 + Room DB mobile app with foreground `BleProxyService`.
+- [English Braille Reference](https://braille.mintlify.site/reference/english-braille): Grade 1 English (`a–z`) chord table.
+- [Bangla Bharati Braille Reference](https://braille.mintlify.site/reference/bangla-braille): Independent vowels (`স্বরবর্ণ`), consonants (`ব্যঞ্জনবর্ণ`), dependent vowel signs (`কার`), and special marks.
+- [Numbers & Symbols Reference](https://braille.mintlify.site/reference/numbers-symbols): `Shift + chord` digits (`1–0`) and math/punctuation symbols.
+- [Research Paper Abstract & Comparative Analysis](https://braille.mintlify.site/paper/abstract): Academic case study, problem statement, innovation analysis, and cost breakdown.

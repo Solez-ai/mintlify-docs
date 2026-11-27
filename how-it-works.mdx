@@ -6,9 +6,9 @@ description: "Deep dive into the BrailleBridge pipeline: 6-bit chord bitmasks, d
 
 Every keypress on BrailleBridge moves through a deterministic embedded pipeline from switch contacts to multi-host wireless output.
 
-## 1. Six-Dot Bitmask Encoding
+## 1. How Are Six-Dot Braille Chords Encoded as Bitmasks?
 
-A standard 6-dot Braille cell maps directly to bits `0..5` of an unsigned byte (`uint8_t`):
+A standard 6-dot Braille cell maps directly to bits `0..5` of an unsigned 8-bit integer (`uint8_t`), giving $2^6 - 1 = 63$ non-empty chord combinations. Dot $n$ sets bit $n - 1$ (`1 << (n - 1)`), while dedicated `SPACE` (`GPIO 33`) and `SHIFT` (`GPIO 32`) keys handle word boundaries, backspace taps, and shifted layers.
 
 ```text
 Dot 1 (bit 0, GPIO 14)    Dot 4 (bit 3, GPIO 27)
@@ -31,9 +31,9 @@ Dot 3 (bit 2, GPIO 13)    Dot 6 (bit 5, GPIO 25)
   **GPIO12 (`DOT_2`) is an ESP32 MTDI boot-strapping pin.** Never attach an external pull-up resistor to `D2`. The firmware enables `INPUT_PULLUP` only inside `setup()` after boot completes, keeping `GPIO12` floating/open at power-on.
 </Note>
 
-## 2. Decode-on-Release State Machine
+## 2. How Does the Decode-on-Release State Machine Prevent Split Chords?
 
-Earlier prototypes committed chords after a fixed `180 ms` window, which split slower chords or added unnecessary latency on fast ones. Current firmware (`braile/braile.ino`) uses **decode-on-release**:
+Instead of committing a chord after a rigid `180 ms` timer—which can split slower presses or cap fast typists—the ESP32 firmware (`braile/braile.ino`) accumulates all pressed dot bits into `chordBits` for as long as any dot key remains held and decodes the character the instant all six dot keys are released. Every pin passes through a live-tunable `15 ms` debounce filter (`5–50 ms`), supporting 100+ WPM chording speed.
 
 1. All 8 inputs pass through a `15 ms` (`DEBOUNCE_MS = 15`) stability filter (`PinFilter`).
 2. While any dot key is held (`anyDot == true`), pressed dot bits are OR-ed into `chordBits` and `shiftWasUsed` tracks whether `SHIFT` was held.
@@ -41,9 +41,9 @@ Earlier prototypes committed chords after a fixed `180 ms` window, which split s
 4. **Release commit**: The instant all six dot keys return HIGH (`!anyDot`), `processChord(chordBits, shiftWasUsed)` evaluates the accumulated bitmask and resets `chordBits = 0`.
 5. **Stuck-key safety**: If a switch remains held past `CHORD_HOLD_MAX_MS = 5000` ms without releasing (excluding the `4+5+6` language chord), the chord auto-commits to avoid locking input.
 
-## 3. Dual Bluetooth + USB Transport Split
+## 3. How Are English ASCII and Bangla UTF-8 Routed Over Bluetooth and USB?
 
-`braile.ino` routes every translated character through `sendChar(const char* c)`:
+Standard Bluetooth HID keyboard keycodes only support single-byte ASCII characters, so pushing multi-byte UTF-8 Bangla characters over BLE HID would stall the HID report descriptor. BrailleBridge solves this by sending ASCII (`< 0x80`) over **both** BLE HID and BLE Nordic UART Service (NUS) + USB Serial, while routing multi-byte UTF-8 Bangla exclusively over BLE NUS and USB Serial (`115200` baud).
 
 - **ASCII (`(uint8_t)c[0] < 0x80`)**: Sent **both** as a standard **BLE HID** keystroke (`bleKeyboard.print(c)`) AND via `streamOut(c, false)` (USB Serial + BLE Nordic UART Service).
 - **Multi-byte UTF-8 (Bangla)**: Sent via `streamOut(c, false)` (**BLE NUS** + **USB Serial**) **only** — bypassing BLE HID so multi-byte UTF-8 sequences never stall the HID report pipeline.
@@ -56,6 +56,8 @@ void streamOut(const char* s, bool newline) {
 }
 ```
 
-## 4. Multi-Device Classroom Routing (Verified with Multiple ESP32s)
+## 4. How Do Multiple ESP32 Units Stream Simultaneously to One Teacher Console?
+
+Each BrailleBridge unit advertises the BLE Nordic UART Service (`6E400001-B5A3-F393-E0A9-E50E24DCCA9E`) under a distinct unit name (`BrailleBridge`, `BrailleBridge 2`, `BrailleBridge 3`, etc.), allowing the Python desktop relay (`Bleak` + Windows `WinRT`) or Android `BleProxyService` to maintain concurrent GATT connections to an entire classroom of students. Each student's character stream is demultiplexed in real time into its own Microsoft Word–style document tab and Exam Mode card.
 
 Because each BrailleBridge advertises the **Nordic UART Service (`6E400001-B5A3-F393-E0A9-E50E24DCCA9E`)** (with distinct unit names such as `BrailleBridge`, `BrailleBridge 2`, and `BrailleBridge 3`), a single teacher PC (via `bleak` + Windows `winrt.windows.devices.radios` auto-radio activation) or Android tablet (via `BleProxyService`) connects **multiple student ESP32 units simultaneously**, routing each device's stream into its own Microsoft Word–style Student Document Tab in the Teacher Console. This concurrent multi-ESP32 pipeline has been hardware-tested and verified as a complete success.
